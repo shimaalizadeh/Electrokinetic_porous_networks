@@ -21,30 +21,30 @@ Example:<br/>
 0 0 3 4 0.6 1600 -15 0.034 0.5 1.00<br/>
 
 - The second part includes reservoirs data. Each reservoir has an id from 0 to num_nodes-1
-There are 9 columns that are respectively:
-Column1: reservoir type (slit(0) or circular(1))
-Column2: If the pressure is known in the reservoir (1 or 0)
-Column3: If the electrochemical potential is known in the reservoir (1 or 0)
-Column4: value of pressure in the reservoir (put 0 if it's unknown)
-Column5: value of electrochemical potential in the reservoir (put 0 if it's unknown)
-Column6: value of concentration (1 at t=0)
-Column7: sigma_star of reservoir
-Column8: lambda_D of reservoir
-Column9: volume of reservoir (0 if pressure or potential are both known, which means it's an end reservoir)
+There are 9 columns that are respectively:<br/>
+Column1: reservoir type (slit(0) or circular(1))<br/>
+Column2: If the pressure is known in the reservoir (1 or 0)<br/>
+Column3: If the electrochemical potential is known in the reservoir (1 or 0)<br/>
+Column4: value of pressure in the reservoir (put 0 if it's unknown)<br/>
+Column5: value of electrochemical potential in the reservoir (put 0 if it's unknown)<br/>
+Column6: value of concentration (1 at t=0)<br/>
+Column7: sigma_star of reservoir<br/>
+Column8: lambda_D of reservoir<br/>
+Column9: volume of reservoir (0 if pressure or potential are both known, which means it's an end reservoir)<br/>
 
 Example:    
 0 0 0 0.0 40.0 1.00 -30 0.017 0.00<br/>
-0 1 1 0.0 0.0 1.00 -30 0.017 8.068e-05<br/>  
+0 1 1 0.0 0.0 1.00 -30 0.017 8.068e-05<br/>
 0 1 1 0.0 0.0 1.00 -15 0.034 8.068e-05<br/>
 0 1 1 0.0 0.0 1.00 -30 0.017 5.072e-05<br/>
 0 1 1 0.0 0.0 1.00 -15 0.034 7.602e-05<br/>
 0 1 0 0.0 0.0 0.10 -30 0.017 0.00<br/>
 
 - The third part of Network.in describe the network connectivity matrix, which says:
-Reservoir i is connected to reservoir j by pore k. So there are three columns:
-Column1: reservoir i
-Column2: reservoir j
-Column3: pore k
+Reservoir i is connected to reservoir j by pore k. So there are three columns:<br/>
+Column1: reservoir i<br/>
+Column2: reservoir j<br/>
+Column3: pore k<br/>
 
 Example:  
 0 1 0<br/>
