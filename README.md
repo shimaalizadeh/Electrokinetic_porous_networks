@@ -19,5 +19,6 @@ Once the input files are ready, a bash script is used to run the code, and it's 
 
 # Toy Problem
 As a starting point, the input file is designed for a network that involves a loop, as shown below:
+![alt text](
 
 
