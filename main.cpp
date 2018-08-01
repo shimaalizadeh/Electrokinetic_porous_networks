@@ -4,52 +4,65 @@
 #include <iomanip>
 #include <cmath>
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
-#include <mpi.h>
+#include <string>
 #include "network_solver.hpp"
 using namespace std;
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     
     //////////////////////////Initialize MPI///////////////////////
-    
-    int myid, num_procs;   
+    int myid=0, num_procs=0;   
   
-    MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-   
-    // read input files
-    ifstream reader("input_files/RightVoltage.in");
-    
-    int n_voltage;
-    
-    reader>>n_voltage;
-    assert(n_voltage == num_procs);
-    int local_sim = 1;
-    
-    double* voltage = new double [n_voltage];
-    
-    for(int i=0 ; i<n_voltage ; i++) {
-    
-    	reader>>voltage[i];
-    	
+    // get arguments
+    if(argc != 9){
+	cerr<<"ERROR: 13 arguments required: \n"<<
+    "# of pores, \n"<<
+    "# of reservoirs, \n"<<
+    "# of horizontal pores in x, \n"<<
+    "# of horizontal pores in y, \n"<<
+    "total # of horizontal pores, \n"<<
+    "delta_t, \n"<<
+    "max_time, \n"<<
+    "write_frequency, \n"<<
+    "restart(0 or 1)"<<
+    "table_path\n"<<endl;
+        exit(EXIT_FAILURE);
     }
+
+    // some default values
+    double current_time = 0.;
+    double right_voltage = 0.; 
+
+    // get arguments
+    int num_pores = atoi(argv[1]);
+    int num_reservoirs = atoi(argv[2]);
+    int hp_x = atoi(argv[3]);
+    int hp_y = atoi(argv[4]);
+    int h_pores = atoi(argv[5]);
+    double dt = atof(argv[6]);
+    double tmax = atof(argv[7]);
+    int period = atoi(argv[8]);
+    int restart = atoi(argv[9]);
+    string table_path = argv[10];
     
-    //set-up the solver
-    NetworkSolver network_solver(myid, 17, 12, 0, 5e-5, 2., 0., 100, voltage[myid]);
-    
-    
-    // solve h-junction
-    network_solver.solve();
-    	
-    //free memory
-    delete [] voltage;
-    
-    MPI_Finalize();
-    return(0);
+    //setup the solver
+    NetworkSolver network_solver(myid, 
+                                 num_pores, 
+                                 num_reservoirs, 
+                                 hp_x, hp_y, h_pores, 
+                                 restart, dt, tmax, 
+                                 current_time, period, 
+                                 right_voltage,
+                                 table_path);
+ 
+   // solve for the first time step
+   network_solver.solve_first_iteration();
+     
+   // solve for other timesteps
+   network_solver.solve();
+
+   return(0);
 }
-    		
-    

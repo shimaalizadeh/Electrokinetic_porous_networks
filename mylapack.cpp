@@ -1,6 +1,6 @@
 #include "mylapack.hpp"
 
-void Lapack::setup(unsigned Num_Channel, unsigned Num_Reservoir, unsigned Total_Cells, int *Channel_Num_Cells, double *dx){
+void Lapack::setup(unsigned Num_Channel, unsigned Num_Reservoir, unsigned Total_Cells, int *Channel_Num_Cells, double *dx, int **Connectivity){
     
     kl=3;
     ku=3;
@@ -52,7 +52,39 @@ void Lapack::setup(unsigned Num_Channel, unsigned Num_Reservoir, unsigned Total_
    }
   
    rhs_p_phi=new double[2*Total_Cells_];
+   
+   int nnz = 0;
+   int *nnz_pr = new int[Num_Reservoir_];
+   
+   col = new int[Num_Reservoir_+1];
+   col[0] = 0;
 
+   for(int i=0; i<Num_Reservoir_; i++){
+
+	nnz_pr[i] = 0;
+	for(int j=0; j<Num_Reservoir_; j++){
+
+		nnz_pr[i] += abs(Connectivity[i][j]);
+		nnz += abs(Connectivity[i][j]);
+	}
+	col[i+1] = col[i] + nnz_pr[i];
+	
+   }
+   res_connections = new int[nnz];
+   int counter = 0; 
+   for(int i=0; i<Num_Reservoir_; i++){
+	
+	for(int j=0; j<Num_Reservoir_; j++){
+
+		if(abs(Connectivity[i][j])==1){
+			res_connections[counter] = j;
+			counter++;
+		}
+	}
+   }
+   
+   delete [] nnz_pr;			
+return;
 }
 
 Lapack::~Lapack(){
@@ -154,7 +186,7 @@ void Lapack::dgtsv(double *DL, double *D, double *DU, double *B, int n_, int nrh
     
     // Now the function call
     dgtsv_(&size, &nrhs, DL, D, DU, B, &ldb, &info);
-    //cout<<"message from dgtsv_: info="<<info<<endl;
+    cout<<"message from dgtsv_: info="<<info<<endl;
 
     return;
 }
@@ -328,6 +360,7 @@ void Lapack::find_reservoir_P_Phi(double *Q1, double *Q2, double *Q3, double *I1
         rhs_2[i]=0.;
     }
     
+    int res;
     for(int i=0; i<Num_Reservoir_; i++){
         
         if(!Reservoir_Pressure_Type[i]){
@@ -340,23 +373,21 @@ void Lapack::find_reservoir_P_Phi(double *Q1, double *Q2, double *Q3, double *I1
         else
         {
             
-            for(int j=0; j<Num_Reservoir_; j++)
+            for(int j=col[i]; j<col[i+1]; j++)
             {
+		res = res_connections[j];
+
                 //non-diagonal elements
-                if(j!=i)
-                {
-                    LHS_2[2*i][2*j]= abs(Connectivity[i][j])*Q2[Connecting_Channel[i][j]];
+                LHS_2[2*i][2*res]= abs(Connectivity[i][res])*Q2[Connecting_Channel[i][res]];
                     
-                    LHS_2[2*i][2*j+1]= abs(Connectivity[i][j])*Q3[Connecting_Channel[i][j]];
-                }
+                LHS_2[2*i][2*res+1]= abs(Connectivity[i][res])*Q3[Connecting_Channel[i][res]];
                 
-                //diagonal elements
+                //diagonal elements 
+                LHS_2[2*i][2*i]+= - abs(Connectivity[i][res])*Q2[Connecting_Channel[i][res]];
                 
-                LHS_2[2*i][2*i]+= - abs(Connectivity[i][j])*Q2[Connecting_Channel[i][j]];
+                LHS_2[2*i][2*i+1]+= - abs(Connectivity[i][res])*Q3[Connecting_Channel[i][res]];
                 
-                LHS_2[2*i][2*i+1]+= - abs(Connectivity[i][j])*Q3[Connecting_Channel[i][j]];
-                
-                rhs_2[2*i]+= - Connectivity[i][j]*Q1[Connecting_Channel[i][j]];                
+                rhs_2[2*i]+= - Connectivity[i][res]*Q1[Connecting_Channel[i][res]];                
             }
         }
         
@@ -369,23 +400,22 @@ void Lapack::find_reservoir_P_Phi(double *Q1, double *Q2, double *Q3, double *I1
         
         else
         {
-            for(int j=0; j<Num_Reservoir_; j++)
+            for(int j=col[i]; j<col[i+1]; j++)
             {
+
+		res = res_connections[j];
                 
                 //non-diagonal elements
-                if(j!=i)
-                {
-                    LHS_2[2*i+1][2*j]= abs(Connectivity[i][j])*I2[Connecting_Channel[i][j]];
+                LHS_2[2*i+1][2*res]= abs(Connectivity[i][res])*I2[Connecting_Channel[i][res]];
                     
-                    LHS_2[2*i+1][2*j+1]= abs(Connectivity[i][j])*I3[Connecting_Channel[i][j]];
-                }
+                LHS_2[2*i+1][2*res+1]= abs(Connectivity[i][res])*I3[Connecting_Channel[i][res]];
                 
                 //diagonal elements
-                LHS_2[2*i+1][2*i]+= - abs(Connectivity[i][j])*I2[Connecting_Channel[i][j]];
+                LHS_2[2*i+1][2*i]+= - abs(Connectivity[i][res])*I2[Connecting_Channel[i][res]];
                 
-                LHS_2[2*i+1][2*i+1]+= - abs(Connectivity[i][j])*I3[Connecting_Channel[i][j]];
+                LHS_2[2*i+1][2*i+1]+= - abs(Connectivity[i][res])*I3[Connecting_Channel[i][res]];
                 
-                rhs_2[2*i+1]+= - Connectivity[i][j]*I1[Connecting_Channel[i][j]];
+                rhs_2[2*i+1]+= - Connectivity[i][res]*I1[Connecting_Channel[i][res]];
             }
         }
     }
@@ -591,49 +621,52 @@ void Lapack::find_reservoir_dc(double *Channel_Inlet_Flux_, double *Channel_Outl
         }
 		
         reservoir_dc[i]=0.;
-    }
-    
-    for(int i=0; i<Num_Reservoir_; i++){
-        
-        if(!Reservoir_Pressure_Type[i] || !Reservoir_Potential_Type[i] ){
+  }
+ 
+  int res;
+  for(int i=0; i<Num_Reservoir_; i++){
+
+	if(!Reservoir_Pressure_Type[i] || !Reservoir_Potential_Type[i] ){
             
             LHS_3[i][i]=1.;
         }
         
         else
         {
-	  LHS_3[i][i] = Reservoir_Volume[i]/dt;
+	 	LHS_3[i][i] = Reservoir_Volume[i]/dt;
             
-	  for(int j=0; j<i; j++) //channel outlet flux which is entering the reservoir
-            {
+	  	for(int j=col[i]; j<col[i+1]; j++){
+	
+			res = res_connections[j];
 
-                //non-diagonal elements
-                LHS_3[i][j]= -abs(Connectivity[j][i])*
-		  three_outlet_flux_[Connecting_Channel[j][i]][1];
-                
-                //diagonal elements
-                LHS_3[i][i]+= - abs(Connectivity[j][i])*
-		  three_outlet_flux_[Connecting_Channel[j][i]][2];
-                
-		// rhs
-                reservoir_dc[i]+= abs(Connectivity[j][i])*(Channel_Outlet_Flux_[Connecting_Channel[j][i]] + three_outlet_flux_[Connecting_Channel[j][i]][0]);                
-            }
+			if(res<i){ //channel outlet flux which is entering the reservoir
 
-	  for(int j=i+1; j<Num_Reservoir_; j++)//channel inlet flux which is leaving the reservoir
-	    {
-	      //non-diagonal elements
-	      LHS_3[i][j]= abs(Connectivity[i][j])*
-		  three_inlet_flux_[Connecting_Channel[i][j]][2];
+                		//non-diagonal elements
+                		LHS_3[i][res]= -abs(Connectivity[res][i])*
+		  		three_outlet_flux_[Connecting_Channel[res][i]][1];
+                
+                		//diagonal elements
+                		LHS_3[i][i]+= - abs(Connectivity[res][i])*
+		  		three_outlet_flux_[Connecting_Channel[res][i]][2];
+                
+				// rhs
+                		reservoir_dc[i]+= abs(Connectivity[res][i])*(Channel_Outlet_Flux_[Connecting_Channel[res][i]] + three_outlet_flux_[Connecting_Channel[res][i]][0]);                
+            		}	
+			else{
+	      			//non-diagonal elements
+	      			LHS_3[i][res]= abs(Connectivity[i][res])*
+		  		three_inlet_flux_[Connecting_Channel[i][res]][2];
 	      
-	      //diagonal elements
-	       LHS_3[i][i]+= abs(Connectivity[i][j])*
-		  three_inlet_flux_[Connecting_Channel[i][j]][1];
+	      			//diagonal elements
+	       			LHS_3[i][i]+= abs(Connectivity[i][res])*
+		  		three_inlet_flux_[Connecting_Channel[i][res]][1];
 
-	      //rhs
-	       reservoir_dc[i] -= abs(Connectivity[i][j])*( Channel_Inlet_Flux_[Connecting_Channel[i][j]] + three_inlet_flux_[Connecting_Channel[i][j]][0]);     
-	    }
-  
-        }//end of else
+	      			//rhs
+	       			reservoir_dc[i] -= abs(Connectivity[i][res])*( Channel_Inlet_Flux_[Connecting_Channel[i][res]] + three_inlet_flux_[Connecting_Channel[i][res]][0]);     
+	    		}
+
+        	}//end of for(j=col...)
+      	}//end of else
     }//end of for(i...)
           
     dgesv(LHS_3, reservoir_dc, Num_Reservoir_);

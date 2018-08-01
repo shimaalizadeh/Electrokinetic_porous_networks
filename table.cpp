@@ -6,13 +6,12 @@
 #include<cmath>
 #include<stdio.h>
 
- void Table::setup(int Num_Channel, int Num_Reservoir, int *Channel_Num_Cells, int *Channel_type,
- int *Reservoir_type, double lambda_ref, double Pe, double slit_gp, double circle_gp, 
- const char* filename_1, const char* filename_2,const char* filename_3, const char* filename_4, 
- unsigned max_sigma_star_counter, unsigned max_lambda_star_counter, double sigma_star_min, 
- double lambda_star_min){
+ void Table::setup(int Num_Channel, int Num_Reservoir, int h_pores, int hp_x, int hp_y, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref, double Pe, double slit_gp, double circle_gp, string filename_1, string filename_2, string filename_3, string filename_4, unsigned max_sigma_star_counter, unsigned max_lambda_star_counter, double sigma_star_min, double lambda_star_min){
 
-  implicit_relaxation = 1.;
+  this-> hp_y = hp_y;
+  this-> hp_x = hp_x;
+  horizontal_pores = h_pores;
+  last_x_idx = hp_x - 1;
 
   //set some values:
   filename_1_ = filename_1;
@@ -60,11 +59,13 @@
  
   // memory allocation
 
+  Channel_blocked_ = new int[Num_Channel];
   Channel_type_ = new int[Num_Channel];
   Reservoir_type_ = new int[Num_Reservoir];
 
   for(int i=0; i<Num_Channel_; i++)
-    {
+    {	
+      Channel_blocked_[i] = Channel_blocked[i];
       Channel_type_[i] = Channel_type[i];
     }
 
@@ -359,7 +360,7 @@ void Table::Import_Table_1(double *lambda_for_table){
 
   //Importing from input files slit and circle: 
   ifstream importing1(filename_1_);
-  ifstream importing3(filename_3_);
+  ifstream importing3(filename_3_); 
 
     for(int i=0; i<max_sigma_star_counter_*max_lambda_star_counter_;i++)
     {
@@ -369,12 +370,12 @@ void Table::Import_Table_1(double *lambda_for_table){
 
 	  table_ge_m[i][0]>>table_gc_m[i][0]>>table_gp_p[i][0]>>table_ge_p[i][0]>>table_gc_p[i][0];
 
-
         importing3>>table_sigma_star[i]>> table_lambda_star[i]>>table_f_bar[i][1]>>
 
         table_Psi_wall>>table_ge_bar[i][1]>> table_gc_bar[i][1]>>table_gp_m[i][1]>>
 
 	  table_ge_m[i][1]>>table_gc_m[i][1]>>table_gp_p[i][1]>>table_ge_p[i][1]>>table_gc_p[i][1];
+	
 
     }
     importing1.close();
@@ -389,7 +390,7 @@ void Table::Import_Table_2(double *lambda_for_table){
 
   //Importing from input files slit and circle: 
   ifstream importing2(filename_2_);
-  ifstream importing4(filename_4_);
+  ifstream importing4(filename_4_); 
 
     for(int i=0; i<max_sigma_star_counter_*max_lambda_star_counter_;i++)
     {
@@ -405,7 +406,7 @@ void Table::Import_Table_2(double *lambda_for_table){
         table_Psi_wall>>table_ge_bar[i][1]>> table_gc_bar[i][1]>>table_gp_m[i][1]>>
 
 	table_ge_m[i][1]>>table_gc_m[i][1]>>table_gp_p[i][1]>>table_ge_p[i][1]>>table_gc_p[i][1];
-   }
+    }
     importing2.close();
     importing4.close();
 
@@ -443,11 +444,9 @@ if(floor(abs(sigma_star)/abs(sigma_star_min_))==0)
           
 }
  else{
-	// asymptotic relations
+	// asymptotic relations for zero/negative concentration
 	if(C_bar < C_min[idx])
 	  {
-	    //cout<<"NOTE: LARGE lambda_star: C["<<i<<"]="<<C_bar[i]<<endl;
-     
 	    sigma_power_=int(10*log10(sigma_star/sigma_star_min_));
             if(sigma_power_ < 0 ) sigma_power_ = 0;
 
@@ -495,8 +494,7 @@ if(floor(abs(sigma_star)/abs(sigma_star_min_))==0)
 	  }
         else if(C_bar > C_max[idx])
         {
-	  //cout<<"NOTE: SMALL lambda_star: C["<<i<<"]="<<C_bar[i]<<endl;
-          // Extrapolation
+      // extrapolation for very large concentrations
     
 	    lambda_star = lambda/sqrt(C_bar);
  
@@ -678,7 +676,8 @@ if(floor(abs(sigma_star)/abs(sigma_star_min_))==0)
 		
 	else
 	  {
-	    
+      // Interpolation for values existing in the range of table
+ 
         lambda_star = lambda/sqrt(C_bar);
 
         sigma_power_ = int(10*log10(sigma_star/sigma_star_min_));
@@ -691,7 +690,6 @@ if(floor(abs(sigma_star)/abs(sigma_star_min_))==0)
 
 	    bb=(log10(lambda_star)-log10(table_lambda_star[max_lambda_star_counter_*sigma_power_+lambda_power_]))/(log10(table_lambda_star[max_lambda_star_counter_*sigma_power_+lambda_power_+1])-log10(table_lambda_star[max_lambda_star_counter_*sigma_power_+lambda_power_]));
         
-	       
         //f_bar
         dum1=aa*(log10(abs(table_f_bar[max_lambda_star_counter_*(sigma_power_+1)+lambda_power_][type]))-
                  
@@ -887,11 +885,12 @@ void Table::Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, dou
    
     }
 
+
     //finding initial C_bar
     for(int i=0;i<Total_Cells_;i++) {
 	C_bar[i] = C0[i]*f_bar_[i];
     }
-   
+  
     //Storing C_bar of reservoirs in a seperate array used for visualization    
     cell_counter=0;
     for(int i=0; i<Num_Channel_; i++)
@@ -910,9 +909,9 @@ void Table::Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, dou
     return;
 }
 
-void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, double *Art_Diff, int **Channel_End_Reservoir){
+void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, int **Channel_End_Reservoir){
     
-  ////in cell centers
+  ////compute coeeficient in cell centers
   int type = 0;
   cell_counter = 0;
 
@@ -989,23 +988,23 @@ void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *l
     cell_counter=0; 
     face_counter=0;
     
-    ////on faces
-    for(int i=0; i<Num_Channel_; i++){
-    
-        for(int j=0; j<Channel_Num_Cells_[i]+1; j++){
+    ////compute coefficients at cell faces
+    for(int i=0; i<Num_Channel_; i++)
+    {
+        for(int j=0; j<Channel_Num_Cells_[i]; j++)
+        {
 
-	    	sqrt_Cf_x_[face_counter] = (sqrt_C_over_fbar_[cell_counter+j+1]+sqrt_C_over_fbar_[cell_counter+j])/2.;
+	    sqrt_Cf_x_[face_counter] = (sqrt_C_over_fbar_[cell_counter+j+1]+sqrt_C_over_fbar_[cell_counter+j])/2.;
 
-	    	diff_x_[face_counter] = (sqrt_C_over_fbar_[cell_counter+j+1]*C_bar[cell_counter+j+1]-sqrt_C_over_fbar_[cell_counter+j]*C_bar[cell_counter+j]) / dx[i];
-	    	diff_x_[face_counter] *= Art_Diff[face_counter]; 
+	    diff_x_[face_counter] = (sqrt_C_over_fbar_[cell_counter+j+1]*C_bar[cell_counter+j+1]-sqrt_C_over_fbar_[cell_counter+j]*C_bar[cell_counter+j]) / dx[i];
 
-	   	 	S_x_[face_counter] = (nondimensional_Sp[cell_counter+j]+nondimensional_Sp[cell_counter+j+1])/2.;
+	    S_x_[face_counter] = (nondimensional_Sp[cell_counter+j]+nondimensional_Sp[cell_counter+j+1])/2.;
 
-	    	Gp_m_x_[face_counter] = (Gp_m_[cell_counter+j]+Gp_m_[cell_counter+j+1])/2.;
+	    Gp_m_x_[face_counter] = (Gp_m_[cell_counter+j]+Gp_m_[cell_counter+j+1])/2.;
 
-	    	Ge_m_x_[face_counter] = (Ge_m_[cell_counter+j]+Ge_m_[cell_counter+j+1])/2.;
+	    Ge_m_x_[face_counter] = (Ge_m_[cell_counter+j]+Ge_m_[cell_counter+j+1])/2.;
 
-	    	Gc_m_x_[face_counter] = (Gc_m_[cell_counter+j]+Gc_m_[cell_counter+j+1])/2.;
+	    Gc_m_x_[face_counter] = (Gc_m_[cell_counter+j]+Gc_m_[cell_counter+j+1])/2.;
 	
             A1_x_[face_counter]=(A1_[cell_counter+j]+A1_[cell_counter+j+1])/2.;
  
@@ -1015,15 +1014,76 @@ void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *l
 	           
             B2_x_[face_counter]=(B2_[cell_counter+j]+B2_[cell_counter+j+1])/2.;
 
-	    	// f1 calculation
-	    	f1_x_[face_counter] = (f1_1_[cell_counter+j+1]+f1_1_[cell_counter+j])/2.0 * diff_x_[face_counter];
+	    // f1 calculation
+	    f1_x_[face_counter] = (f1_1_[cell_counter+j+1]+f1_1_[cell_counter+j])/2.0 * diff_x_[face_counter];
      
-            // f2 calculation
-	    	f2_x_[face_counter] = (f2_1_[cell_counter+j+1]+f2_1_[cell_counter+j])/2.0 * diff_x_[face_counter];
+      // f2 calculation
+	    f2_x_[face_counter] = (f2_1_[cell_counter+j+1]+f2_1_[cell_counter+j])/2.0 * diff_x_[face_counter];
 
             face_counter++;
         }
 
+  // EDITTED: last element is updated one sided if the pore is dead-end
+	if(Channel_blocked_[i]==1){
+                sqrt_Cf_x_[face_counter] = 3./2.*sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]]-sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+
+        diff_x_[face_counter] =  (sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]]*C_bar[cell_counter+Channel_Num_Cells_[i]]-sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]-1]*C_bar[cell_counter+Channel_Num_Cells_[i]-1]) / dx[i];
+
+        S_x_[face_counter] = 3./2.*nondimensional_Sp[cell_counter+Channel_Num_Cells_[i]] - nondimensional_Sp[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+
+        Gp_m_x_[face_counter] = 3./2.*Gp_m_[cell_counter+Channel_Num_Cells_[i]]-Gp_m_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        Ge_m_x_[face_counter] = 3./2.*Ge_m_[cell_counter+Channel_Num_Cells_[i]]-Ge_m_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        Gc_m_x_[face_counter] = 3./2.*Gc_m_[cell_counter+Channel_Num_Cells_[i]]-Gc_m_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        A1_x_[face_counter] = 3./2.*A1_[cell_counter+Channel_Num_Cells_[i]]-A1_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        B1_x_[face_counter] = 3./2.*B1_[cell_counter+Channel_Num_Cells_[i]]-B1_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        A2_x_[face_counter] = 3./2.*A2_[cell_counter+Channel_Num_Cells_[i]]-A2_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        B2_x_[face_counter] = 3./2.*B2_[cell_counter+Channel_Num_Cells_[i]] - B2_[cell_counter+Channel_Num_Cells_[i]-1]/2.;
+
+        // f1 calculation
+        f1_x_[face_counter] = (3./2.*f1_1_[cell_counter+Channel_Num_Cells_[i]]-f1_1_[cell_counter+Channel_Num_Cells_[i]-1]/2.) * diff_x_[face_counter];
+        
+        // f2 calculation
+        f2_x_[face_counter] = (3./2.*f2_1_[cell_counter+Channel_Num_Cells_[i]]-f2_1_[cell_counter+Channel_Num_Cells_[i]-1]/2.) * diff_x_[face_counter];
+        
+          face_counter++;
+        }
+ 	else{ //similar to internal elements if it's a normal pore
+
+        sqrt_Cf_x_[face_counter] = (sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]+1]+sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]])/2.;
+
+            diff_x_[face_counter] = (sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]+1]*C_bar[cell_counter+Channel_Num_Cells_[i]+1]-sqrt_C_over_fbar_[cell_counter+Channel_Num_Cells_[i]]*C_bar[cell_counter+Channel_Num_Cells_[i]]) / dx[i];
+
+            S_x_[face_counter] = (nondimensional_Sp[cell_counter+Channel_Num_Cells_[i]]+nondimensional_Sp[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            Gp_m_x_[face_counter] = (Gp_m_[cell_counter+Channel_Num_Cells_[i]]+Gp_m_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            Ge_m_x_[face_counter] = (Ge_m_[cell_counter+Channel_Num_Cells_[i]]+Ge_m_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            Gc_m_x_[face_counter] = (Gc_m_[cell_counter+Channel_Num_Cells_[i]]+Gc_m_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            A1_x_[face_counter]=(A1_[cell_counter+Channel_Num_Cells_[i]]+A1_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            B1_x_[face_counter]=(B1_[cell_counter+Channel_Num_Cells_[i]]+B1_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            A2_x_[face_counter]=(A2_[cell_counter+Channel_Num_Cells_[i]]+A2_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            B2_x_[face_counter]=(B2_[cell_counter+Channel_Num_Cells_[i]]+B2_[cell_counter+Channel_Num_Cells_[i]+1])/2.;
+
+            // f1 calculation
+            f1_x_[face_counter] = (f1_1_[cell_counter+Channel_Num_Cells_[i]+1]+f1_1_[cell_counter+Channel_Num_Cells_[i]])/2.0 * diff_x_[face_counter];
+            
+	     // f2 calculation
+            f2_x_[face_counter] = (f2_1_[cell_counter+Channel_Num_Cells_[i]+1]+f2_1_[cell_counter+Channel_Num_Cells_[i]])/2.0 * diff_x_[face_counter];
+            face_counter++;
+        }
         cell_counter+=Channel_Num_Cells_[i]+2;
     }
     
@@ -1055,7 +1115,7 @@ void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *l
         return;
 }
 
-void Table::do_table_reading(double *sigma_star, double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0, int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx, double *Art_Diff, double time){
+void Table::do_table_reading(double *sigma_star, double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0, int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx, double time){
 
   // Read from table
   cell_counter = 0;
@@ -1091,7 +1151,7 @@ void Table::do_table_reading(double *sigma_star, double *lambda_for_table, doubl
         Reservoir_C0[Channel_End_Reservoir[i][1]]=C0[cell_counter-1];
     }
 
-  calculate_A_B_f_RHS(C_bar, C0, Cs, lambda, nondimensional_Sp, dx, Art_Diff, Channel_End_Reservoir);
+  calculate_A_B_f_RHS(C_bar, C0, Cs, lambda, nondimensional_Sp, dx, Channel_End_Reservoir);
   return;
 }
 
@@ -1101,39 +1161,48 @@ void Table::find_flux_n(double *C_bar, double *C0, double *dPdx, double *dMudx,d
     face_counter=0;
     cell_counter=0;
 
-    for(int i=0; i< Num_Channel_; i++){
-    
-      for(int j=0; j<Channel_Num_Cells_[i]+1; j++){
-      
-      	U[face_counter+j]=A1_x_[face_counter+j]*dPdx[face_counter+j] + B1_x_[face_counter+j]*dMudx[face_counter+j] - f1_x_[face_counter+j];
+    for(int i=0; i< Num_Channel_; i++)
+    {
+      for(int j=0; j<Channel_Num_Cells_[i]+1; j++)
+        {
+	   U[face_counter+j]=A1_x_[face_counter+j]*dPdx[face_counter+j] + B1_x_[face_counter+j]*dMudx[face_counter+j] - f1_x_[face_counter+j];
 	
-	  	adv_x_[face_counter+j]=U[face_counter+j]*(C_bar[cell_counter+j+1]+C_bar[cell_counter+j])/2. + Gp_m_x_[face_counter+j]* dPdx[face_counter+j] + Ge_m_x_[face_counter+j]*dMudx[face_counter+j] + Gc_m_x_[face_counter+j]*diff_x_[face_counter+j];
+	  adv_x_[face_counter+j]=U[face_counter+j]*(C_bar[cell_counter+j+1]+C_bar[cell_counter+j])/2. + Gp_m_x_[face_counter+j]* dPdx[face_counter+j] + Ge_m_x_[face_counter+j]*dMudx[face_counter+j] + Gc_m_x_[face_counter+j]*diff_x_[face_counter+j];
           
-	  	elec_mig_x_[face_counter+j]=(C_bar[cell_counter+j+1]+C_bar[cell_counter+j])/2.*dMudx[face_counter+j];
+	  elec_mig_x_[face_counter+j]=(C_bar[cell_counter+j+1]+C_bar[cell_counter+j])/2.*dMudx[face_counter+j];
             
-	  	Flux_x_n_[face_counter+j] = adv_x_[face_counter+j] - 1./sqrt_Cf_x_[face_counter+j]* diff_x_[face_counter+j] + elec_mig_x_[face_counter+j];
+	  Flux_x_n_[face_counter+j] = adv_x_[face_counter+j] - 1./sqrt_Cf_x_[face_counter+j]* diff_x_[face_counter+j] + elec_mig_x_[face_counter+j];
             
-	  	Flux_x_n_[face_counter+j] = Flux_x_n_[face_counter+j] * S_x_[face_counter+j];
- 
-        //Storing inlet and outlet fluxes
-	    if(j==0){
-	    
-			Channel_Inlet_Flux_[i]=Flux_x_n_[face_counter+j];
-	    }
-        else if(j==Channel_Num_Cells_[i]){
+	  Flux_x_n_[face_counter+j] = Flux_x_n_[face_counter+j] * S_x_[face_counter+j];
+
+            //Storing inlet and outlet fluxes
+	    if(j==0) 
+	      {
+		Channel_Inlet_Flux_[i] = Flux_x_n_[face_counter+j];
+	      }
+            else if(j==Channel_Num_Cells_[i]) {
+
+		 if(Channel_blocked_[i]==1){
+
+                        Flux_x_n_[face_counter+j] = 0.0;
+                        Channel_Outlet_Flux_[i]= 0.0;
+            	 }
+            	 else{
+
+                	Channel_Outlet_Flux_[i] = Flux_x_n_[face_counter+j];
+                 }
+
+             }
+	}  
         
-			Channel_Outlet_Flux_[i]=Flux_x_n_[face_counter+j];
-	    }
-      }
-        
-        cell_counter+=Channel_Num_Cells_[i]+2;
-        face_counter+=Channel_Num_Cells_[i]+1;
+        cell_counter += Channel_Num_Cells_[i]+2;
+        face_counter += Channel_Num_Cells_[i]+1;
     }
 
     return;
 }
 
-void Table::solve_for_dc(Lapack  &solver, double *C_bar, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double *dC_bar)
+void Table::solve_for_dc(Lapack  &solver, double *C_bar, double *rhs_cbar_part, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double scheme_factor, double *dC_bar)
 {
     ////setting everything to zero
     for(int i=0; i<Total_Cells_-1; i++)
@@ -1156,15 +1225,15 @@ void Table::solve_for_dc(Lapack  &solver, double *C_bar, double *dMudx, double *
       implicit_rhs[2*Total_Cells_+cell_counter] = 0.;
 
         for(int j=1; j< Channel_Num_Cells_[i]+1; j++)
-        {	             
-            implicit_rhs[cell_counter+j]=-(Flux_x_n_[face_counter+j]-Flux_x_n_[face_counter+j-1])/dx[i];
+        {	  
+            implicit_rhs[cell_counter+j]= rhs_cbar_part[cell_counter+j] - 1./nondimensional_Sp[cell_counter+j] * (Flux_x_n_[face_counter+j]-Flux_x_n_[face_counter+j-1])/dx[i];
 
 	    implicit_rhs[Total_Cells_+cell_counter+j] = 0.;
 
 	    implicit_rhs[2*Total_Cells_+cell_counter+j] = 0.;       
         }
-
-        cell_counter+=Channel_Num_Cells_[i]+2;
+        
+	cell_counter+=Channel_Num_Cells_[i]+2;
         face_counter+=Channel_Num_Cells_[i]+1;
 
 	implicit_rhs[cell_counter-1] = 0.;
@@ -1184,89 +1253,105 @@ void Table::solve_for_dc(Lapack  &solver, double *C_bar, double *dMudx, double *
       for(int j=1; j< Channel_Num_Cells_[i]+1; j++){
 
         //// main diagonal
-		implicit_D[cell_counter+j] = implicit_relaxation*S_x_[face_counter+j]/dx[i]*
-		(U[face_counter+j]/2.0 + 1./dx[i]*sqrt_C_over_fbar_[cell_counter+j]/sqrt_Cf_x_[face_counter+j] + 1.0/2.0*dMudx[face_counter+j]);
+	implicit_D[cell_counter+j] = S_x_[face_counter+j]/(nondimensional_Sp[cell_counter+j]*dx[i])*
+	(U[face_counter+j]/2.0 + 1./dx[i]*sqrt_C_over_fbar_[cell_counter+j]/sqrt_Cf_x_[face_counter+j] + 1.0/2.0*dMudx[face_counter+j]);
 
-		implicit_D[cell_counter+j] += implicit_relaxation*S_x_[face_counter+j-1]/dx[i]*
-		(-U[face_counter+j-1]/2.0 + 1.0/dx[i]*sqrt_C_over_fbar_[cell_counter+j]/sqrt_Cf_x_[face_counter+j-1] - 1.0/2.0*dMudx[face_counter+j-1]);
+	implicit_D[cell_counter+j] += S_x_[face_counter+j-1]/(nondimensional_Sp[cell_counter+j]*dx[i])*
+	(-U[face_counter+j-1]/2.0 + 1.0/dx[i]*sqrt_C_over_fbar_[cell_counter+j]/sqrt_Cf_x_[face_counter+j-1] - 1.0/2.0*dMudx[face_counter+j-1]);
 
-		implicit_D[cell_counter+j] += nondimensional_Sp[cell_counter+j]/dt;
+	implicit_D[cell_counter+j] += scheme_factor/dt;
 
         //// lower-diagonal
-		implicit_LD[cell_counter+j-1] = implicit_relaxation*S_x_[face_counter+j-1]/dx[i]*
-		(-U[face_counter+j-1]/2.0 - 1.0/dx[i]*sqrt_C_over_fbar_[cell_counter+j-1]/sqrt_Cf_x_[face_counter+j-1] - 1.0/2.0*dMudx[face_counter+j-1]);
+	implicit_LD[cell_counter+j-1] = S_x_[face_counter+j-1]/(nondimensional_Sp[cell_counter+j]*dx[i])*
+	(-U[face_counter+j-1]/2.0 - 1.0/dx[i]*sqrt_C_over_fbar_[cell_counter+j-1]/sqrt_Cf_x_[face_counter+j-1] - 1.0/2.0*dMudx[face_counter+j-1]);
 
-		//// upper-diagonal
-		implicit_UD[cell_counter+j] = implicit_relaxation*S_x_[face_counter+j]/dx[i]*
-		(U[face_counter+j]/2.0 - 1.0/dx[i]*sqrt_C_over_fbar_[cell_counter+j+1]/sqrt_Cf_x_[face_counter+j]+ 1.0/2.0*dMudx[face_counter+j]);
-    }
+	//// upper-diagonal
+	implicit_UD[cell_counter+j] = S_x_[face_counter+j]/(nondimensional_Sp[cell_counter+j]*dx[i])*
+	(U[face_counter+j]/2.0 - 1.0/dx[i]*sqrt_C_over_fbar_[cell_counter+j+1]/sqrt_Cf_x_[face_counter+j]+ 1.0/2.0*dMudx[face_counter+j]);
+      }
 
-      	cell_counter += Channel_Num_Cells_[i]+2;
-      	face_counter += Channel_Num_Cells_[i]+1;
+      cell_counter += Channel_Num_Cells_[i]+2;
+      face_counter += Channel_Num_Cells_[i]+1;
     
-      	implicit_D[cell_counter-1] = 1.;
+      implicit_D[cell_counter-1] = 1.;
     }
-    
     //// now solving the tri-diagonal systems
     solver.dgtsv(implicit_LD, implicit_D, implicit_UD, implicit_rhs, Total_Cells_ , 3);
 
     //// find F1, F2 and F3 in the inlet and outlet of the channels
     cell_counter = 0;
     face_counter = 0;
-    for(int i=0; i<Num_Channel_; i++){
+    for(int i=0; i<Num_Channel_; i++)
+      {
+	double inlet_coef = (U[face_counter] + dMudx[face_counter]) ;
+
+	three_inlet_flux_[i][0] = inlet_coef * (implicit_rhs[cell_counter+1]+implicit_rhs[cell_counter])/2.0 - 1.0/sqrt_Cf_x_[face_counter] * (sqrt_C_over_fbar_[cell_counter+1]*implicit_rhs[cell_counter+1] - sqrt_C_over_fbar_[cell_counter]*implicit_rhs[cell_counter])/dx[i];
+
+	three_inlet_flux_[i][0] *= S_x_[face_counter];
+
+	three_inlet_flux_[i][1] = inlet_coef * (implicit_rhs[Total_Cells_+cell_counter+1]+implicit_rhs[Total_Cells_+cell_counter])/2.0 - 1.0/sqrt_Cf_x_[face_counter] * (sqrt_C_over_fbar_[cell_counter+1]*implicit_rhs[Total_Cells_+cell_counter+1] - sqrt_C_over_fbar_[cell_counter]*implicit_rhs[Total_Cells_+cell_counter])/dx[i];
+
+	three_inlet_flux_[i][1] *= S_x_[face_counter];
+
+	three_inlet_flux_[i][2] = inlet_coef * (implicit_rhs[2*Total_Cells_+cell_counter+1]+implicit_rhs[2*Total_Cells_+cell_counter])/2.0 - 1.0/sqrt_Cf_x_[face_counter] * (sqrt_C_over_fbar_[cell_counter+1]*implicit_rhs[2*Total_Cells_+cell_counter+1] - sqrt_C_over_fbar_[cell_counter]*implicit_rhs[2*Total_Cells_+cell_counter])/dx[i];
+
+	three_inlet_flux_[i][2] *= S_x_[face_counter];
+
+	cell_counter += Channel_Num_Cells_[i]+2;
+	face_counter += Channel_Num_Cells_[i]+1;
+
+	if(Channel_blocked_[i]==1){
+
+                        double outlet_coef = (U[face_counter-1] + dMudx[face_counter-1]);
+
+                        three_outlet_flux_[i][0] = outlet_coef * (3./2.*implicit_rhs[cell_counter-2] - implicit_rhs[cell_counter-3]/2.) - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[cell_counter-2] - sqrt_C_over_fbar_[cell_counter-3]*implicit_rhs[cell_counter-3])/dx[i] ;
+
+                        three_outlet_flux_[i][0] *= S_x_[face_counter-1];
+
+                        three_outlet_flux_[i][1] = outlet_coef * (3./2.*implicit_rhs[Total_Cells_+cell_counter-2] - implicit_rhs[Total_Cells_+cell_counter-3]/2.) - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[Total_Cells_+cell_counter-2] - sqrt_C_over_fbar_[cell_counter-3]*implicit_rhs[Total_Cells_+cell_counter-3])/dx[i] ;
+
+                        three_outlet_flux_[i][1] *= implicit_relaxation*S_x_[face_counter-1];
+
+                        three_outlet_flux_[i][2] = outlet_coef * (3./2.*implicit_rhs[2*Total_Cells_+cell_counter-2] - implicit_rhs[2*Total_Cells_+cell_counter-3]/2.) - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[2*Total_Cells_+cell_counter-2] - sqrt_C_over_fbar_[cell_counter-3]*implicit_rhs[2*Total_Cells_+cell_counter-3])/dx[i];
+
+                        three_outlet_flux_[i][2] *= implicit_relaxation*S_x_[face_counter-1];
+
+        }
+        else{
+
+	double outlet_coef = (U[face_counter-1] + dMudx[face_counter-1]);
+
+	three_outlet_flux_[i][0] = outlet_coef * (implicit_rhs[cell_counter-1]+implicit_rhs[cell_counter-2])/2.0 - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-1]*implicit_rhs[cell_counter-1] - sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[cell_counter-2])/dx[i] ;
+
+	three_outlet_flux_[i][0] *= S_x_[face_counter-1];
+
+	three_outlet_flux_[i][1] = outlet_coef * (implicit_rhs[Total_Cells_+cell_counter-1]+implicit_rhs[Total_Cells_+cell_counter-2])/2.0 - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-1]*implicit_rhs[Total_Cells_+cell_counter-1] - sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[Total_Cells_+cell_counter-2])/dx[i] ; 
+
+	three_outlet_flux_[i][1] *= S_x_[face_counter-1];
+
+	three_outlet_flux_[i][2] = outlet_coef * (implicit_rhs[2*Total_Cells_+cell_counter-1]+implicit_rhs[2*Total_Cells_+cell_counter-2])/2.0 - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-1]*implicit_rhs[2*Total_Cells_+cell_counter-1] - sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[2*Total_Cells_+cell_counter-2])/dx[i];
+
+	three_outlet_flux_[i][2] *= S_x_[face_counter-1];
+
+      }
+}
     
-		double inlet_coef = (U[face_counter] + dMudx[face_counter]) ;
+solver.find_reservoir_dc(Channel_Inlet_Flux_,Channel_Outlet_Flux_, three_inlet_flux_, three_outlet_flux_,  Reservoir_Pressure_Type, Reservoir_Potential_Type, Connectivity, Connecting_Channel, Reservoir_Volume, dt, reservoir_dc);
 
-		three_inlet_flux_[i][0] = inlet_coef * (implicit_rhs[cell_counter+1]+implicit_rhs[cell_counter])/2.0 - 1.0/sqrt_Cf_x_[face_counter] * (sqrt_C_over_fbar_[cell_counter+1]*implicit_rhs[cell_counter+1] - sqrt_C_over_fbar_[cell_counter]*implicit_rhs[cell_counter])/dx[i];
+    cell_counter = 0;
+    for(int i=0; i<Num_Channel_; i++)
+      {
+	for(int j=0; j<Channel_Num_Cells_[i]+2; j++)
+	  {
+	    dC_bar[cell_counter] = implicit_rhs[cell_counter] + 
+	      reservoir_dc[Channel_End_Reservoir[i][0]]*implicit_rhs[Total_Cells_+cell_counter] +
+	      reservoir_dc[Channel_End_Reservoir[i][1]]*implicit_rhs[2*Total_Cells_+cell_counter];
 
-		three_inlet_flux_[i][0] *= S_x_[face_counter];
+	    cell_counter++;
 
-		three_inlet_flux_[i][1] = inlet_coef * (implicit_rhs[Total_Cells_+cell_counter+1]+implicit_rhs[Total_Cells_+cell_counter])/2.0 - 1.0/sqrt_Cf_x_[face_counter] * (sqrt_C_over_fbar_[cell_counter+1]*implicit_rhs[Total_Cells_+cell_counter+1] - sqrt_C_over_fbar_[cell_counter]*implicit_rhs[Total_Cells_+cell_counter])/dx[i];
-	
-		three_inlet_flux_[i][1] *= implicit_relaxation*S_x_[face_counter];
+	  }
+      }
 
-		three_inlet_flux_[i][2] = inlet_coef * (implicit_rhs[2*Total_Cells_+cell_counter+1]+implicit_rhs[2*Total_Cells_+cell_counter])/2.0 - 1.0/sqrt_Cf_x_[face_counter] * (sqrt_C_over_fbar_[cell_counter+1]*implicit_rhs[2*Total_Cells_+cell_counter+1] - sqrt_C_over_fbar_[cell_counter]*implicit_rhs[2*Total_Cells_+cell_counter])/dx[i];
-
-		three_inlet_flux_[i][2] *= implicit_relaxation*S_x_[face_counter];
-
-		cell_counter += Channel_Num_Cells_[i]+2;
-		face_counter += Channel_Num_Cells_[i]+1;
-
-		double outlet_coef = (U[face_counter-1] + dMudx[face_counter-1]);
-
-		three_outlet_flux_[i][0] = outlet_coef * (implicit_rhs[cell_counter-1]+implicit_rhs[cell_counter-2])/2.0 - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-1]*implicit_rhs[cell_counter-1] - sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[cell_counter-2])/dx[i] ;
-
-		three_outlet_flux_[i][0] *= S_x_[face_counter-1];
-
-		three_outlet_flux_[i][1] = outlet_coef * (implicit_rhs[Total_Cells_+cell_counter-1]+implicit_rhs[Total_Cells_+cell_counter-2])/2.0 - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-1]*implicit_rhs[Total_Cells_+cell_counter-1] - sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[Total_Cells_+cell_counter-2])/dx[i] ; 
-
-		three_outlet_flux_[i][1] *= implicit_relaxation*S_x_[face_counter-1];
-
-		three_outlet_flux_[i][2] = outlet_coef * (implicit_rhs[2*Total_Cells_+cell_counter-1]+implicit_rhs[2*Total_Cells_+cell_counter-2])/2.0 - 1.0/sqrt_Cf_x_[face_counter-1] * (sqrt_C_over_fbar_[cell_counter-1]*implicit_rhs[2*Total_Cells_+cell_counter-1] - sqrt_C_over_fbar_[cell_counter-2]*implicit_rhs[2*Total_Cells_+cell_counter-2])/dx[i];
-
-		three_outlet_flux_[i][2] *= implicit_relaxation*S_x_[face_counter-1];
-
-    }
-
-    	solver.find_reservoir_dc(Channel_Inlet_Flux_,Channel_Outlet_Flux_, three_inlet_flux_, three_outlet_flux_,  Reservoir_Pressure_Type, Reservoir_Potential_Type, Connectivity, Connecting_Channel, Reservoir_Volume, dt, reservoir_dc);
-
-    	cell_counter = 0;
-    	for(int i=0; i<Num_Channel_; i++){
-    	
-			for(int j=0; j<Channel_Num_Cells_[i]+2; j++){
-			
-	    		dC_bar[cell_counter] = implicit_rhs[cell_counter] + 
-	      		reservoir_dc[Channel_End_Reservoir[i][0]]*implicit_rhs[Total_Cells_+cell_counter] +
-	      		reservoir_dc[Channel_End_Reservoir[i][1]]*implicit_rhs[2*Total_Cells_+cell_counter];
-	      
-	    		cell_counter++;
-	  		}
-      	}
-
+   
     return;
 }
-
-
-
-
-
