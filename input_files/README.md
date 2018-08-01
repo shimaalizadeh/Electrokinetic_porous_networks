@@ -1,16 +1,16 @@
 - The first part if for pores' data. Note that each pore has an id from 0 to num_pores-1
 There are 10 columns that are respectively:
 
-Column1: type of pore (slit(0) or circular(1))
-Column2: if the pore has dead-end(1) or not (0)
-Column3: pore input reservoir id
-Column4: pore output reservoir id
-Column5: pore length (non-dimensional)
-Column6: number of mesh points inside pore
-Column7: sigma_star
-Column8: lambda_D
-Column9: pore area cross section (non-dimensional)
-Column10: pore concentration (1 at t=0)
+Column1: type of pore (slit(0) or circular(1))<br/>
+Column2: if the pore has dead-end(1) or not (0)<br/>
+Column3: pore input reservoir id<br/>
+Column4: pore output reservoir id<br/>
+Column5: pore length (non-dimensional)<br/>
+Column6: number of mesh points inside pore<br/>
+Column7: sigma_star<br/>
+Column8: lambda_D<br/>
+Column9: pore area cross section (non-dimensional)<br/>
+Column10: pore concentration (1 at t=0)<br/>
 
 Example:<br/>
 0 0 0 1 0.6 1600 -30 0.017 1.00 1.00<br/>
