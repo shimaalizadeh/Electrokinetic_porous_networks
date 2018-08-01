@@ -7,9 +7,8 @@
 #include<cmath>
 #include<string>
 #include<stdio.h>
+#include<assert.h>
 using namespace std;
-
-#include"mymath_tools.h"
 
 class Network{
 
@@ -18,46 +17,46 @@ class Network{
    Network(){};
   ~Network();
   
-   void setup(const char* filename_1, int Num_Channel_, int Num_reservoir_, int restart_, double right_voltage);
+   void setup(int Num_Channel, int Num_Reservoir, int restart, double dt, double Tmax, double time, double period, double right_voltage);
 
-    void reset(const char* filename_1, double right_voltage);
-    
-    void reset_from_file(const char* filename_1, double right_voltage);
-    
     void Initial_Memory_Allocation(int Num_Channel,int Num_Reservoir);
-    void Read_filename_1(const char* filename_1, double right_voltage);
     void Memory_Allocation();
+    void Read_filename_1(const char* filename_1, double right_voltage);
+    void read_restart_files(void);
     void set_electrochemical_parameters();
     void set_to_zero(double *vector, int size);
 
-    void set_dt();
-    void set_simulation_time(double time, double dt, double T_max, int period);
+    void set_dt(void);
+    void compute_gradients(void);
     void store_reservoir_data(double *data, double*Reservoir_data);
-    void Update_C_bar(int myid, double tt);
-    double* Shock_Treatment();      
-    void Write_filename_1(const char* filename_1);
+    void update_C_bar(int myid, double tt);
+    void update_Old_Cbar(void);
+    void compute_first_iteration_rhs_cbar_part(void);
+    void compute_rhs_cbar_part(void);
+    void write_restart_network(double time);
+    void write_restart_channel(double time);
     double check_C_conservativity(void);
-    void   compute_gradients(void);
 
    // for initial file reading
-   double* sigma_val;
-  double*  lambda_val;
-  double*  s_val;
-  double*  c0_val;
+   double*  sigma_val;
+   double*  lambda_val;
+   double*  s_val;
+   double*  c0_val;
   
-  //public variables
-  double       slit_gp_bar;          //Average Pressure driven flow in a slit
-  double       circle_gp_bar;
-  double       Pe;
-  double       lambda_ref;
-  int          Num_Channel;             
-  int          Num_Reservoir;
-  int          Total_Cells;             //including reservoir cells
-  int          Total_Faces;
-  int         *Channel_type;
-  int         *Reservoir_type;
-  int         *Channel_Num_Cells;       //excluding reservoir cells 
-  int         **Channel_End_Reservoir;  //num_channel*2 matrix: 1st column is inlet reservoir, 2nd column is end reservoir
+   //public variables
+   double       slit_gp_bar;          //Average Pressure driven flow in a slit
+   double       circle_gp_bar;
+   double       Pe;
+   double       lambda_ref;
+   int          Num_Channel;             
+   int          Num_Reservoir;
+   int          Total_Cells;             //including reservoir cells
+   int          Total_Faces;
+   int         *Channel_type;
+   int         *Channel_blocked;
+   int         *Reservoir_type;
+   int         *Channel_Num_Cells;       //excluding reservoir cells 
+   int         **Channel_End_Reservoir;  //num_channel*2 matrix: 1st column is inlet reservoir, 2nd column is end reservoir
   int         **Connectivity;
   int         **Connecting_Channel;
   bool        *Reservoir_Pressure_Type; //if 0--> end reservoir if 1-->internal
@@ -75,32 +74,35 @@ class Network{
   double      *C_bar;
   double      *C0;
   double      *Cs;
+  double      *C_bar_n;  //cbar in moment (n)
+  double      *C_bar_n_1; //cbar in moment (n-1)
+  double      *rhs_cbar_part;
   double      *sigma_star;
   double      *lambda;
   double      *lambda_for_table;
   double      *nondimensional_Sp;
-  double      *Pressure, *Potential;
+  double      *Pressure;
+  double      *Potential;
   double      *U;
   double      *Q1, *Q2, *Q3;
   double      *I1, *I2, *I3;
   double      *Q, *I;
 
-  double      T_max;
+  double      Tmax;
   double      time;
   double      dt;
   int         period;
 
   double      *dC_bar;
-  double      *Art_Diff;     //artificial diffusivity
 
   //for simplicity in flux calculation
   double      *dPdx;
   double      *dMudx;
  
   //geometry
-  int         *Ns;                      //# of cells in streamwise
-  int         *Nt;                      //# of cells in transverse
-  int         *Nz;                      //# of cells in z
+  int         *Ns; //# of cells in streamwise
+  int         *Nt; //# of cells in transverse
+  int         *Nz; //# of cells in z
   double      *ds;
   double      *dn;
   double      *dz;
@@ -113,7 +115,6 @@ class Network{
   int         restart;
   int         cell_counter;
   int         face_counter;
-  int         Art_Diff_Switch; 
   
   //electrochemical parameters
   int    z;                 //valence
