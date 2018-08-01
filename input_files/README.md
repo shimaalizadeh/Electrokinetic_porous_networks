@@ -33,12 +33,12 @@ Column8: lambda_D of reservoir
 Column9: volume of reservoir (0 if pressure or potential are both known, which means it's an end reservoir)
 
 Example:    
-0 0 0 0.0 40.0 1.00 -30 0.017 0.00 . 
+0 0 0 0.0 40.0 1.00 -30 0.017 0.00
 0 1 1 0.0 0.0 1.00 -30 0.017 8.068e-05        
-0 1 1 0.0 0.0 1.00 -15 0.034 8.068e-05 . 
-0 1 1 0.0 0.0 1.00 -30 0.017 5.072e-05 . 
-0 1 1 0.0 0.0 1.00 -15 0.034 7.602e-05 . 
-0 1 0 0.0 0.0 0.10 -30 0.017 0.00 . 
+0 1 1 0.0 0.0 1.00 -15 0.034 8.068e-05  
+0 1 1 0.0 0.0 1.00 -30 0.017 5.072e-05  
+0 1 1 0.0 0.0 1.00 -15 0.034 7.602e-05  
+0 1 0 0.0 0.0 0.10 -30 0.017 0.00 
 
 - The third part of Network.in describe the network connectivity matrix, which says:
 Reservoir i is connected to reservoir j by pore k. So there are three columns:
@@ -46,13 +46,13 @@ Column1: reservoir i
 Column2: reservoir j
 Column3: pore k
 
-Example:
-0 1 0
-1 3 1
-1 2 3
-2 4 4
-3 4 5
-3 5 5
+Example:  
+0 1 0 
+1 3 1 
+1 2 3 
+2 4 4 
+3 4 5 
+3 5 5 
 
 - The last part of the file is no longer used.
 1600 6 4 0.62 0.28 0.03 0.0 0.0 0.0 0.0
