@@ -15,3 +15,8 @@ If everything goes through, it means all things are installed properly and now y
 # Input Files
 To run the code you have to provide Network.in located at input_files folder. The guidline of how to prepare the file is in input_files folder.
 The developed model uses a number of look-up tables to complete computations. These tables are already generated. You just need to put them in a directory and specify the path in the bash script. 
+Once the input files are ready, a bash script is used to run the code, and it's located at bin folder.
+
+# Toy Problem
+As a starting point, the input file is designed for a network that involves a loop, as shown below:
+
