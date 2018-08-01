@@ -12,7 +12,7 @@ class Table{
  
   ~Table();
 
-  void setup(int Num_Channel, int Num_Reservoir, int *Channel_Num_Cells, int *Channel_type, int *Reservoir_type, double lambda_ref=1e-9, double Pe=0.7, double slit_gp=-1./3, double circle_gp=-1./2, const char* filename_1="slit_sigma_lambda0.in", const char* filename_2="slit_sigma_lambda_star.in", const char* filename_3="circle_sigma_lambda0.in", const char* filename_4="circle_sigma_lambda_star.in", unsigned max_sigma_star_counter=48, unsigned max_lambda_star_counter=38, double sigma_star_min=-0.1, double lambda_star_min=0.01);
+  void setup(int Num_Channel, int Num_Reservoir, int h_pores, int hp_x, int hp_y, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref=1e-9, double Pe=0.7, double slit_gp=-1./3, double circle_gp=-1./2, const char* filename_1="slit_sigma_lambda0.in", const char* filename_2="slit_sigma_lambda_star.in", const char* filename_3="circle_sigma_lambda0.in", const char* filename_4="circle_sigma_lambda_star.in", unsigned max_sigma_star_counter=61, unsigned max_lambda_star_counter=52, double sigma_star_min=-0.1, double lambda_star_min=0.0003);
 
   void Import_Table_1(double *lambda_for_table);
 
@@ -24,15 +24,17 @@ class Table{
     
   void Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, double *C0, int **Channel_End_Reservoir, double *C_bar, double *Reservoir_C_bar, double time);
 
-  void do_table_reading(double *sigma_star,double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0,int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx, double *Art_Diff, double time);
+  void do_table_reading(double *sigma_star,double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0,int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx, double time);
     
-  void calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, double *Art_Diff, int **Channel_End_Reservoir);
+  void calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, int **Channel_End_Reservoir);
 
   void find_flux_n(double *C_bar, double *C0, double *dPdx, double *dMudx,double *nondimensional_Sp, double *dx, double *U, double time);
 
-  void solve_for_dc(Lapack  &solver, double *C_bar, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double *dC_bar);
+  void solve_for_dc(Lapack  &solver, double *C_bar, double *rhs_cbar_part, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double scheme_factor, double *dC_bar);
 
   const double * give_f_bar(void){return(f_bar_);}
+
+    int *Channel_blocked_;
 
     int *Channel_type_;
 
@@ -49,7 +51,9 @@ class Table{
     double * S_x_;    
     double * sqrt_Cf_x_;
     double * dCfdx;
+
     private:
+    int hp_y, hp_x, horizontal_pores, last_x_idx;
     double * A1_;
     double * A2_;
     double * B1_;

@@ -61,7 +61,7 @@ public:
 
 	~Lapack();
      
-    void setup(unsigned Num_Channel, unsigned Num_Reservoir, unsigned Total_Cells, int *Channel_Num_Cells, double *dx);
+    void setup(unsigned Num_Channel, unsigned Num_Reservoir, unsigned Total_Cells, int *Channel_Num_Cells, double *dx, int **Connectivity);
     
     void dgesv(double **LHS_2, double *rhs_2, int n);
     
@@ -82,7 +82,9 @@ public:
     void  find_reservoir_dc(double *Channel_Inlet_Flux_, double *Channel_Outlet_Flux_, double **three_inlet_flux_, double **three_outlet_flux_, bool*Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, int **Connectivity, int **Connecting_Channel, double *Reservoir_Volume, double dt, double *reservoir_dc);
         
 private:
-    
+   
+    int	      *res_connections;
+    int       *col; 
     int       Num_Channel_;         //Num of channel
     int       Num_Reservoir_;       //num of reservoirs
     int       *Channel_Num_Cells_;   //num of cells for each channel
