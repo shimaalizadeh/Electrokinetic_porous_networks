@@ -4,12 +4,13 @@
 #include "network_info.hpp"
 #include "table.hpp"
 #include "mylapack.hpp"
+#include<string>
 
 class NetworkSolver{
 
 	public:
 	
-	NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int hp_x, int hp_y, int h_pores, int restart, double dt, double Tmax, double time, int period, double right_voltage);
+	NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int hp_x, int hp_y, int h_pores, int restart, double dt, double Tmax, double time, int period, double right_voltage string table_path);
 	
 	~NetworkSolver();
 	

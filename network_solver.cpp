@@ -10,7 +10,7 @@
 using namespace std;
 
 //Constructor
-NetworkSolver::NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int hp_x, int hp_y, int h_pores, int restart, double dt, double Tmax, double time, int period, double right_voltage){
+NetworkSolver::NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int hp_x, int hp_y, int h_pores, int restart, double dt, double Tmax, double time, int period, double right_voltage, string table_path){
 
 	this-> myid = myid;
 	this-> Num_Channel = Num_Channel;
@@ -42,17 +42,14 @@ NetworkSolver::NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int h
   	////2.table reading object
   	table.setup(Num_Channel, Num_Reservoir, h_pores, hp_x, hp_y, network.Channel_Num_Cells, network.Channel_blocked, network.Channel_type,
   	 network.Reservoir_type, network.lambda_ref, network.Pe, network.slit_gp_bar, 
-  	 network.circle_gp_bar, "/home/shima86/tables/slit_sigma_lambda0.in", "/home/shima86/tables/slit_sigma_lambdastar.in",
+  	 network.circle_gp_bar, table_path+"slit_sigma_lambda0.in", table_path+"slit_sigma_lambdastar.in",
 
-  	 "/home/shima86/tables2/circle_sigma_lambda0.in", "/home/shima86/tables2/circle_sigma_lambdastar.in");
+  	 table_path+"circle_sigma_lambda0.in", table_path+"circle_sigma_lambdastar.in");
 
   	////3. poisson solver object
   	solver.setup(Num_Channel, Num_Reservoir, network.Total_Cells, network.Channel_Num_Cells, 
 		network.dx, network.Connectivity);
 
-	//Mesh_Generation(Num_Channel, Num_Reservoir, network.Ns, network.Nt, network.Nz, network.ds, network.dn, network.dz, network.theta, network.x0, network.y0, network.z0);
-
-	cout<<"mesh generated"<<endl;
 }
 
 //destructor
@@ -239,13 +236,11 @@ void NetworkSolver::solve_first_iteration(void){
 void  NetworkSolver::report_status(){
 
 	cout<<"time= "<<time<<endl;
-        double tmp = 0.0;
-	for(int i = h_pores-24; i < h_pores; i++)
+    double tmp = 0.0;
+	for(int i = 0; i < Num_Channel; i++)
 		tmp += network.I[i];
 
 		cout<<"I_tot = "<<tmp<<endl;
-		cout<<"Q[0] = "<<network.Q[0]<<"  , Q[18]= "<<network.Q[18]<<endl;
-
 		cout<<endl;
 	return;
 }
