@@ -1,6 +1,7 @@
 #ifndef TABLE_HPP
 #define TABLE_HPP
 
+#include<string>
 #include "mylapack.hpp"
 using namespace std;
 
@@ -12,7 +13,7 @@ class Table{
  
   ~Table();
 
-  void setup(int Num_Channel, int Num_Reservoir, int h_pores, int hp_x, int hp_y, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref=1e-9, double Pe=0.7, double slit_gp=-1./3, double circle_gp=-1./2, const char* filename_1="slit_sigma_lambda0.in", const char* filename_2="slit_sigma_lambda_star.in", const char* filename_3="circle_sigma_lambda0.in", const char* filename_4="circle_sigma_lambda_star.in", unsigned max_sigma_star_counter=61, unsigned max_lambda_star_counter=52, double sigma_star_min=-0.1, double lambda_star_min=0.0003);
+  void setup(int Num_Channel, int Num_Reservoir, int h_pores, int hp_x, int hp_y, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref=1e-9, double Pe=0.7, double slit_gp=-1./3, double circle_gp=-1./2, string filename_1="slit_sigma_lambda0.in", string filename_2="slit_sigma_lambda_star.in", string filename_3="circle_sigma_lambda0.in", string filename_4="circle_sigma_lambda_star.in", unsigned max_sigma_star_counter=61, unsigned max_lambda_star_counter=52, double sigma_star_min=-0.1, double lambda_star_min=0.0003);
 
   void Import_Table_1(double *lambda_for_table);
 
@@ -116,10 +117,10 @@ class Table{
     double **table_ge_p;
     double **table_gc_p;
 
-    const char *filename_1_;
-    const char *filename_2_;
-    const char *filename_3_;
-    const char *filename_4_;
+    string filename_1_;
+    string filename_2_;
+    string filename_3_;
+    string filename_4_;
     int     sigma_power_;
     int     lambda_power_;
     double  sigma_star_min_;
