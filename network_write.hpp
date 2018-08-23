@@ -12,7 +12,7 @@ using namespace std;
 
 void Mesh_Generation(int Num_Channel, int Num_Reservoir, int *Ns, int *Nt, int *Nz, double *ds, double *dn, double *dz, double *theta, double *x0, double *y0, double *z0);
 
-void write(int Num_Channel, int Num_Reservoir, int *Ns, int *Nt, int *Nz, double *C_bar, double *Reservoir_C_bar, double *C0, double *Reservoir_C0, double *Pressure, double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, double* U, int num_h_pores, int time);
+void write(int Num_Channel, int Num_Reservoir, int *Ns, double *C_bar, double *Reservoir_C_bar, double *C0, double *Reservoir_C0, double *Pressure, double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, double* U, int num_h_pores, int time);
 
 void write_current_flow(int Num_channel, double *Q, double *I, double *S);
 
@@ -87,7 +87,7 @@ return;
 }
 
 
-void write(int Num_Channel, int Num_Reservoir, int *Ns, int *Nt, int *Nz, double *C_bar, 
+void write(int Num_Channel, int Num_Reservoir, int *Ns, double *C_bar, 
 double *Reservoir_C_bar, double *C0, double *Reservoir_C0, double *Pressure, 
 double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, double *U, int num_h_pores, int time)
 {
@@ -121,8 +121,6 @@ double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, doubl
   for(int region=0; region<domain_num; region++)
   {
 	  Myfile_Data_Tec.write((char*) & Ns[region], sizeof(int));
-	  Myfile_Data_Tec.write((char*) & Nt[region], sizeof(int));
-	  Myfile_Data_Tec.write((char*) & Nz[region], sizeof(int));
 	  Myfile_Data_Tec.write((char*) & variable_num, sizeof(int));
   }
 
@@ -133,56 +131,42 @@ double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, doubl
     {
       
 	  //C_bar		
-	  for (int k=0;k<Nz[region];k++) {
-		   for (int j=0;j<Nt[region];j++) {
-		     for (int i=0;i<Ns[region];i++) {
+	  for (int i=0;i<Ns[region];i++) {
 
 		       C=C_bar[counter+i];
 
 		       Myfile_Data_Tec.write((char*) & C, sizeof(double));
-		     }
-		   }
-		 }
+	  }
+		  
 	  //C0
-	  for (int k=0;k<Nz[region];k++) {
-	    for (int j=0;j<Nt[region];j++) {
-	      for (int i=0;i<Ns[region];i++) {
+	  for (int i=0;i<Ns[region];i++) {
 
 		C= C0[counter+i];
 
 		Myfile_Data_Tec.write((char*) & C, sizeof(double));
-	      }
-	    }
 	  }
+	   
 	  
 	  //Pressure
-	  for (int k=0;k<Nz[region];k++) {
-	    for (int j=0;j<Nt[region];j++) {
-	      for (int i=0;i<Ns[region];i++) {
+	  for (int i=0;i<Ns[region];i++) {
 
 		P=Pressure[counter+i];
 
 		Myfile_Data_Tec.write((char*) & P, sizeof(double));
-	      }
-	    }
 	  }
+	   
 
 	  //Potential
-	  for (int k=0;k<Nz[region];k++) {
-	    for (int j=0;j<Nt[region];j++) {
-	      for (int i=0;i<Ns[region];i++) {
+	  for (int i=0;i<Ns[region];i++) {
 
 		Phi=Potential[counter+i];
 
 		Myfile_Data_Tec.write((char*) & Phi, sizeof(double));
-	      }
-	    }
 	  }
+	    
 
 	  //U
-	  for (int k=0;k<Nz[region];k++) {
-            for (int j=0;j<Nt[region];j++) {
-              for (int i=0;i<Ns[region];i++) {
+	  for (int i=0;i<Ns[region];i++) {
 
 		if(region < num_h_pores)
 			u = U[face_counter+i+1];
@@ -190,14 +174,11 @@ double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, doubl
 			u = 0.0;
 
                 Myfile_Data_Tec.write((char*) &u, sizeof(double));
-              }
-            }
-          }
+        }
+         
 	  
 	  //V
-	  for (int k=0;k<Nz[region];k++) {
-            for (int j=0;j<Nt[region];j++) {
-              for (int i=0;i<Ns[region];i++) {
+      for (int i=0;i<Ns[region];i++) {
 
 		if(region < num_h_pores)
 			v = 0.0;
@@ -205,21 +186,17 @@ double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, doubl
                 	v = U[face_counter+i+1];
 
                 Myfile_Data_Tec.write((char*) &v, sizeof(double));
-              }
-            }
-          }
+        }
+        
 
 	  //W
-	  for (int k=0;k<Nz[region];k++) {
-            for (int j=0;j<Nt[region];j++) {
-              for (int i=0;i<Ns[region];i++) {
+      for (int i=0;i<Ns[region];i++) {
 
                 w = 0.0;
 
                 Myfile_Data_Tec.write((char*) &w, sizeof(double));
-              }
-            }
-          }
+      }
+         
 
 	  counter += Ns[region]+2;
 	  face_counter += Ns[region]+1;
@@ -242,6 +219,7 @@ void write_current_flow(int Num_channel, double *Q, double *I, double *S){
   fwrite.write((char*) I, numchannel*sizeof(double));
   fwrite.write((char*) S, numchannel*sizeof(double)); 
 
+  fwrite.close();
   return;
 }
 

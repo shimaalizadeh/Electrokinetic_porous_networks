@@ -10,7 +10,7 @@ CXX=		g++
 #CXX=		mpicxx
 #CC =		mpicc
 
-CXXFLAGS=	-c -g -Wall -O3 
+CXXFLAGS=	-c -g -w -O3 
 SOURCES=	main.cpp network_solver.cpp network_info.cpp table.cpp mylapack.cpp 
 OBJECTS=	$(SOURCES:.cpp=.o)
 LDFLAGS=

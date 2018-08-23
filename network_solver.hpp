@@ -1,16 +1,17 @@
 #ifndef NETWORK_SOLVER_HPP
 #define NETWORK_SOLVER_HPP
 
+#include<string>
 #include "network_info.hpp"
 #include "table.hpp"
 #include "mylapack.hpp"
-#include<string>
+
 
 class NetworkSolver{
 
 	public:
 	
-	NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int hp_x, int hp_y, int h_pores, int restart, double dt, double Tmax, double time, int period, double right_voltage, string table_path);
+	NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int h_pores, int restart, double dt, double Tmax, double time, int period, string table_path, string network_input_file);
 	
 	~NetworkSolver();
 	
@@ -24,8 +25,6 @@ class NetworkSolver{
 	int myid;
 	int Num_Channel;
 	int Num_Reservoir;
-	int hp_x;
-	int hp_y;
 	int h_pores;
 	int restart;
 	double dt;

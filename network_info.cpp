@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 
-void Network::setup(int Num_Channel, int Num_Reservoir, int restart, double dt, double Tmax, double time, double period, double right_voltage){
+void Network::setup(int Num_Channel, int Num_Reservoir, int restart, double dt, double Tmax, double time, double period, string network_input_file){
     
   //set Pe and gp_bar
   set_electrochemical_parameters();
@@ -21,7 +21,7 @@ void Network::setup(int Num_Channel, int Num_Reservoir, int restart, double dt, 
 
   if(restart == 0){  
   
-	Read_filename_1("input_files/Network.in", right_voltage);
+	Read_filename_1("input_files/"+network_input_file);
   
 	//I want to force zero value for P, Phi, k and dC_bar at the beginning
   	set_to_zero(Pressure, Total_Cells);
@@ -105,16 +105,6 @@ Network::~Network(){
   delete [] Q;
   delete [] I;
   delete [] dC_bar;
-  delete [] Ns;
-  delete [] Nt;
-  delete [] Nz;
-  delete [] ds;
-  delete [] dn;
-  delete [] dz;
-  delete [] x0;
-  delete [] y0;
-  delete [] z0;
-  delete [] theta;
 
   for(int i=0;i<Num_Channel;i++)
     {
@@ -149,27 +139,6 @@ void Network::Initial_Memory_Allocation(int  Num_Channel, int Num_Reservoir){
  
   Reservoir_type = new int[Num_Reservoir];
   
-  Ns=new int[Num_Channel+Num_Reservoir];
-
-  Nt=new int[Num_Channel+Num_Reservoir];
-
-  Nz=new int[Num_Channel+Num_Reservoir];
-
-  ds=new double[Num_Channel+Num_Reservoir];
-  
-  dn=new double[Num_Channel+Num_Reservoir];
-  
-  dz=new double[Num_Channel+Num_Reservoir]; 
-  
-  x0=new double[Num_Channel+Num_Reservoir];
-  
-  y0=new double[Num_Channel+Num_Reservoir];
-  
-  z0=new double[Num_Channel+Num_Reservoir];
-  
-  theta=new double[Num_Channel+Num_Reservoir];
-
-
   Channel_End_Reservoir=new int*[Num_Channel];
 
   for(int i=0;i<Num_Channel;i++)
@@ -217,10 +186,9 @@ void Network::Initial_Memory_Allocation(int  Num_Channel, int Num_Reservoir){
 return;
 }
 
-void Network::Read_filename_1(const char* filename_1, double right_voltage){
+void Network::Read_filename_1(string filename_1){
 
 ifstream read_1(filename_1);
-double S_ref;
   
 //Reading Channel properties
 for(int i=0; i<Num_Channel; i++){
@@ -325,30 +293,16 @@ for(int i=0; i<Num_Channel; i++){
 	  Connecting_Channel[column][row] = Connecting_Channel[row][column];
 }
     
-//geometry parameters
-for(int i=0;i<Num_Channel+Num_Reservoir;i++){
-			
-	read_1>>Ns[i]>>Nt[i]>>Nz[i]>>ds[i]>>dn[i]>>dz[i]>>x0[i]>>y0[i]>>z0[i]>>theta[i];
-	ds[i] = ds[i]/(Ns[i]);
-	dn[i] = dn[i]/(Nt[i]);
-	dz[i] = dz[i]/(Nz[i]);
-}
-	    
-for(int i=0; i<Num_Channel+Num_Reservoir; i++){
-
-	read_1>>Ns[i]>>Nt[i]>>Nz[i]>>ds[i]>>dn[i]>>dz[i]>>x0[i]>>y0[i]>>z0[i]>>theta[i];
-}
-
 #if 0	
-S_ref = nondimensional_Sp[1];
+double S_ref = nondimensional_Sp[1];
 for(int i=0; i<Total_Cells; i++){
       nondimensional_Sp[i]=nondimensional_Sp[i]/S_ref;
 }
 #endif
     
 read_1.close();
+return;
 
-  return;
 }
 
 void Network::Memory_Allocation(){
@@ -531,14 +485,8 @@ void Network::write_restart_network(double time){
       write_1<<Channel_End_Reservoir[i][0]<<setw(5)<<Channel_End_Reservoir[i][1]<<setw(5)<<i<<endl;
     }
 
-  write_1<<endl;
-  //geometry parameters
-  for(int i=0;i<Num_Channel+Num_Reservoir;i++){
-
-      write_1<<Ns[i]<<setw(5)<<Nt[i]<<setw(5)<<Nz[i]<<setw(10)<<ds[i]<<setw(10)<<dn[i]<<setw(10)<<dz[i]<<setw(10)<<x0[i]<<setw(10)<<y0[i]<<setw(10)<<z0[i]<<setw(10)<<theta[i]<<endl;;
-  }
-     
-  return;
+    write_1.close();
+    return;
 }
 
 void Network::write_restart_channel(double time){
@@ -599,11 +547,6 @@ for(int i=0; i<Num_Channel; i++){
 	  Connecting_Channel[column][row] = Connecting_Channel[row][column];
 }
 
-//geometry parameters
-for(int i=0; i<Num_Channel+Num_Reservoir; i++){
-
-	read_1>>Ns[i]>>Nt[i]>>Nz[i]>>ds[i]>>dn[i]>>dz[i]>>x0[i]>>y0[i]>>z0[i]>>theta[i];
-}	
 read_1.close();
 
 Total_Cells = 0;
