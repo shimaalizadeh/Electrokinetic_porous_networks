@@ -1,4 +1,6 @@
-- The first part if for pores' data. Note that each pore has an id from 0 to num_pores-1
+The inpout file Network.in consists of 3 main sections that are need to be provided back to back. Below you can find out how to fill each part. The example describes each part for the toy problem displayed in Electrokinetic_porous_networks folder.
+
+-The first part if for pores' data. Note that each pore has an id from 0 to num_pores-1
 There are 10 columns that are respectively:
 
 Column1: type of pore (slit(0) or circular(1))<br/>
@@ -53,16 +55,3 @@ Example:
 2 4 4<br/>
 3 4 5<br/>
 3 5 5<br/>
-
-- The last part of the file is no longer used.
-1600 6 4 0.62 0.28 0.03 0.0 0.0 0.0 0.0<br/>
-1600 6 4 0.62 0.19 0.03 0.0 -0.6 0.0 0.0<br/>
-1600 6 4 0.62 0.25 0.03 0.0 -1.2 0.0 0.0<br/>
-1600 6 4 0.62 0.26 0.03 0.0 -5.0 0.0 0.0<br/>
-1600 6 4 0.62 0.33 0.03 0.0 -5.6 0.0 0.0<br/>
-2 3 1 0.12 0.33 0.00 0.0 0.0 0.0 0.0<br/>
-2 3 1 0.12 0.33 0.00 0.0 0.0 0.0 0.0<br/>
-2 3 1 0.12 0.33 0.00 0.0 0.0 0.0 0.0<br/>
-2 3 1 0.12 0.33 0.00 0.0 0.0 0.0 0.0<br/>
-2 3 1 0.12 0.33 0.00 0.0 0.0 0.0 0.0<br/>
-2 3 1 0.12 0.33 0.00 0.0 0.0 0.0 0.0<br/>
