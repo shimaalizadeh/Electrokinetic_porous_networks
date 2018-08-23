@@ -1,4 +1,6 @@
-- The first part if for pores' data. Note that each pore has an id from 0 to num_pores-1
+The inpout file Network.in consists of 3 main sections that are need to be provided back to back. Below you can find out how to fill each part:
+
+-The first part if for pores' data. Note that each pore has an id from 0 to num_pores-1
 There are 10 columns that are respectively:
 
 Column1: type of pore (slit(0) or circular(1))<br/>
