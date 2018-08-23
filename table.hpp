@@ -13,7 +13,7 @@ class Table{
  
   ~Table();
 
-  void setup(int Num_Channel, int Num_Reservoir, int h_pores, int hp_x, int hp_y, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref=1e-9, double Pe=0.7, double slit_gp=-1./3, double circle_gp=-1./2, string filename_1="slit_sigma_lambda0.in", string filename_2="slit_sigma_lambda_star.in", string filename_3="circle_sigma_lambda0.in", string filename_4="circle_sigma_lambda_star.in", unsigned max_sigma_star_counter=61, unsigned max_lambda_star_counter=52, double sigma_star_min=-0.1, double lambda_star_min=0.0003);
+  void setup(int Num_Channel, int Num_Reservoir, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref=1e-9, double Pe=0.7, double slit_gp=-1./3, double circle_gp=-1./2, string filename_1="slit_sigma_lambda0.in", string filename_2="slit_sigma_lambda_star.in", string filename_3="circle_sigma_lambda0.in", string filename_4="circle_sigma_lambda_star.in", unsigned max_sigma_star_counter=61, unsigned max_lambda_star_counter=52, double sigma_star_min=-0.1, double lambda_star_min=0.0003);
 
   void Import_Table_1(double *lambda_for_table);
 
@@ -54,7 +54,6 @@ class Table{
     double * dCfdx;
 
     private:
-    int hp_y, hp_x, horizontal_pores, last_x_idx;
     double * A1_;
     double * A2_;
     double * B1_;

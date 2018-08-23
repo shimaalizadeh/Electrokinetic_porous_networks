@@ -6,12 +6,7 @@
 #include<cmath>
 #include<stdio.h>
 
- void Table::setup(int Num_Channel, int Num_Reservoir, int h_pores, int hp_x, int hp_y, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref, double Pe, double slit_gp, double circle_gp, string filename_1, string filename_2, string filename_3, string filename_4, unsigned max_sigma_star_counter, unsigned max_lambda_star_counter, double sigma_star_min, double lambda_star_min){
-
-  this-> hp_y = hp_y;
-  this-> hp_x = hp_x;
-  horizontal_pores = h_pores;
-  last_x_idx = hp_x - 1;
+ void Table::setup(int Num_Channel, int Num_Reservoir, int *Channel_Num_Cells, int *Channel_blocked, int *Channel_type, int *Reservoir_type, double lambda_ref, double Pe, double slit_gp, double circle_gp, string filename_1, string filename_2, string filename_3, string filename_4, unsigned max_sigma_star_counter, unsigned max_lambda_star_counter, double sigma_star_min, double lambda_star_min){
 
   //set some values:
   filename_1_ = filename_1;

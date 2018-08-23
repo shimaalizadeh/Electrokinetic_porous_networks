@@ -10,26 +10,23 @@
 using namespace std;
 
 //Constructor
-NetworkSolver::NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int hp_x, int hp_y, int h_pores, int restart, double dt, double Tmax, double time, int period, double right_voltage, string table_path){
+NetworkSolver::NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int h_pores, int restart, double dt, double Tmax, double time, int period, string table_path, string network_input_file){
 
 	this-> myid = myid;
 	this-> Num_Channel = Num_Channel;
 	this-> Num_Reservoir = Num_Reservoir;
-	this-> hp_x = hp_x;
-	this-> hp_y = hp_y;
 	this-> h_pores = h_pores;
 	this-> restart = restart;
 	this-> period = period;
 	this-> dt = dt;
 	this-> Tmax = Tmax;
 	this->time = time;
-	this-> right_voltage = right_voltage;
 
 	restart_period = 4*period;
 	inner_iteration = 3;
-
+    
 	////1. network object
-  	network.setup(Num_Channel, Num_Reservoir, restart, dt, Tmax, time, period, right_voltage);
+  	network.setup(Num_Channel, Num_Reservoir, restart, dt, Tmax, time, period, network_input_file);
 	this->time = network.time;
 
 	if( int(this->time/dt) % period == 0){
@@ -40,7 +37,7 @@ NetworkSolver::NetworkSolver(int myid, int Num_Channel, int Num_Reservoir, int h
 	}
 
   	////2.table reading object
-  	table.setup(Num_Channel, Num_Reservoir, h_pores, hp_x, hp_y, network.Channel_Num_Cells, network.Channel_blocked, network.Channel_type,
+  	table.setup(Num_Channel, Num_Reservoir, network.Channel_Num_Cells, network.Channel_blocked, network.Channel_type,
   	 network.Reservoir_type, network.lambda_ref, network.Pe, network.slit_gp_bar, 
   	 network.circle_gp_bar, table_path+"slit_sigma_lambda0.in", table_path+"slit_sigma_lambdastar.in",
 
@@ -115,7 +112,7 @@ void NetworkSolver::solve()
 #if 0
 		if( int(time/dt) % network.period == 0){
 
-			write(Num_Channel, Num_Reservoir, network.Ns, network.Nt, network.Nz, 
+			write(Num_Channel, Num_Reservoir, network.Channel_Num_Cells,  
 			network.C_bar, network.Reservoir_C_bar, network.C0, network.Reservoir_C0, 
 			network.Pressure, network.Reservoir_Pressure, network.Potential,
 			network.Reservoir_Potential, network.U, h_pores, counter);
@@ -130,17 +127,14 @@ void NetworkSolver::solve()
 			cout<<"write restart files at time "<<time<<endl;
                         network.write_restart_network(time);
                         network.write_restart_channel(time);
-                }
+        }
 
-
-	
-
-       		report_status();
+       	report_status();
 
   	}//End of while
 
   	////Final writing
-	write(Num_Channel, Num_Reservoir, network.Ns, network.Nt, network.Nz, network.C_bar, 
+	write(Num_Channel, Num_Reservoir, network.Channel_Num_Cells, network.C_bar, 
 	network.Reservoir_C_bar, network.C0, network.Reservoir_C0, network.Pressure, 
 	network.Reservoir_Pressure, network.Potential, network.Reservoir_Potential, network.U, h_pores, counter);
 
@@ -182,22 +176,25 @@ void NetworkSolver::solve_first_iteration(void){
 #if 0
 	////initial writing
 	if( int(time/dt) % network.period == 0){
-		write(Num_Channel, Num_Reservoir, network.Ns, network.Nt, network.Nz, network.C_bar, 
+		write(Num_Channel, Num_Reservoir, network.Channel_Num_Cells, network.C_bar, 
 		network.Reservoir_C_bar, network.C0, network.Reservoir_C0, network.Pressure, 
 		network.Reservoir_Pressure, network.Potential, network.Reservoir_Potential, network.U, h_pores, counter);
 		counter++;
 	}
 #endif
-        //// start inner loop
+
+    //// start inner loop
 	time += dt;
 	network.update_Old_Cbar();
 	for(int i=0; i<inner_iteration; i++){
 
 		network.compute_first_iteration_rhs_cbar_part();
+		cout<<"shima0"<<endl;
 
 		table.do_table_reading(network.sigma_star,network.lambda_for_table, network.lambda,
 		network.C_bar, network.C0, network.Reservoir_C0, network.Channel_End_Reservoir, 
 		network.Cs, network.nondimensional_Sp, network.dx, time);
+		cout<<"shima1"<<endl;
 
 		solver.solve(table.A1_x_, table.B1_x_, table.A2_x_, table.B2_x_, table.f1_x_, 
 		table.f2_x_, table.S_x_, table.RHS_, network.dx, network.Connectivity, 
@@ -236,11 +233,7 @@ void NetworkSolver::solve_first_iteration(void){
 void  NetworkSolver::report_status(){
 
 	cout<<"time= "<<time<<endl;
-    double tmp = 0.0;
-	for(int i = 0; i < Num_Channel; i++)
-		tmp += network.I[i];
-
-		cout<<"I_tot = "<<tmp<<endl;
-		cout<<endl;
+    cout<<"I_tot = "<<network.I[Num_Channel-1]<<endl;
+	cout<<endl;
 	return;
 }

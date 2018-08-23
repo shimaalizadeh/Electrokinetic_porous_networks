@@ -17,11 +17,11 @@ class Network{
    Network(){};
   ~Network();
   
-   void setup(int Num_Channel, int Num_Reservoir, int restart, double dt, double Tmax, double time, double period, double right_voltage);
+   void setup(int Num_Channel, int Num_Reservoir, int restart, double dt, double Tmax, double time, double period, string network_input_file);
 
     void Initial_Memory_Allocation(int Num_Channel,int Num_Reservoir);
     void Memory_Allocation();
-    void Read_filename_1(const char* filename_1, double right_voltage);
+    void Read_filename_1(string filename_1);
     void read_restart_files(void);
     void set_electrochemical_parameters();
     void set_to_zero(double *vector, int size);
@@ -99,18 +99,6 @@ class Network{
   double      *dPdx;
   double      *dMudx;
  
-  //geometry
-  int         *Ns; //# of cells in streamwise
-  int         *Nt; //# of cells in transverse
-  int         *Nz; //# of cells in z
-  double      *ds;
-  double      *dn;
-  double      *dz;
-  double      *x0;
-  double      *y0;
-  double      *z0;
-  double      *theta;
-
  private: 
   int         restart;
   int         cell_counter;
