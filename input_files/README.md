@@ -1,4 +1,4 @@
-The inpout file Network.in consists of 3 main sections that are need to be provided back to back. Below you can find out how to fill each part:
+The inpout file Network.in consists of 3 main sections that are need to be provided back to back. Below you can find out how to fill each part. The example describes each part for the toy problem displayed in Electrokinetic_porous_networks folder.
 
 -The first part if for pores' data. Note that each pore has an id from 0 to num_pores-1
 There are 10 columns that are respectively:
