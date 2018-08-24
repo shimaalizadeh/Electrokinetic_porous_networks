@@ -4,6 +4,7 @@ codedir: the location of the code. DO NOT forget to set this with the right path
 program: the executive that is run by this script (DO NOT CHANGE!)<br/>
 
 Please set the rest of the parameters based on the network you want to simulate:<br/>
+
 num_pores: number of pores you have in your network<br/>
 num_reservoirs: number of reservoirs (nodes) you have in the netwrok.<br/>
 h_pores: set to 1 (DO NOT CHANGE, it will be deprecated later)<br/>
