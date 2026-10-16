@@ -39,3 +39,11 @@ arrays, so results are identical (checked on 5 example networks, see `examples/`
 - Convert old files: `python3 tools/network_in_to_toml.py input_files/Network.in -p <num_pores> -r <num_reservoirs> -o input_files/network.toml`
 - Per-cell properties (old Channels.in): add `profile = "cells.csv"` to a pore; CSV header
   `sigma_star,lambda_D,Sp,C0`, one row per cell.
+
+Built-in defaults (precedence: entry field > `[defaults]` > built-in): pores
+`type="slit"`, `dead_end=false`, `area=1.0`, `c0=1.0`; reservoirs `type="slit"`,
+`c0=1.0`, `volume=0.0`, `pressure=0.0` (ignored by the solver), and `sigma_star`/`lambda_D`
+inherited from `[defaults]`. Required (no neutral value): pore `id`, `ends`, `length`,
+`n_cells`, `sigma_star`, `lambda_D` (all but id/ends may come from `[defaults]`);
+reservoir `id`, `pressure_known`, `potential_known`, `potential`. The converter omits
+anything equal to what the loader would fill in.

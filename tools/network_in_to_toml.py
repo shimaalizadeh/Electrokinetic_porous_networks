@@ -105,12 +105,24 @@ def check(pores, res, conn):
             sys.exit(f"error: reservoir {k} type {r['type']} is not 0/1")
 
 
+# Built-in defaults of the C++ loader (network_input.cpp). Precedence there is
+# entry field > [defaults] > built-in, so the converter omits anything that would
+# resolve to the same value anyway.
+PORE_BUILTIN = {"type": 0, "dead_end": 0, "area": 1.0, "c0": 1.0}
+RES_BUILTIN = {"type": 0, "pressure": 0.0, "c0": 1.0, "volume": 0.0}
+
+
 def to_toml(pores, res, src):
     keys = ["type", "dead_end", "length", "n_cells", "sigma_star", "lambda_D", "area", "c0"]
-    # [defaults] = values shared by every pore; pores only list what differs
-    defaults = {k: pores[0][k] for k in keys if all(p[k] == pores[0][k] for p in pores)}
-    if len(pores) == 1:  # a single pore: keep everything on the pore itself
-        defaults = {}
+    # [defaults] = values shared by every pore (skipped if equal to a built-in);
+    # with a single pore everything stays on the pore itself.
+    defaults = {}
+    if len(pores) > 1:
+        defaults = {k: pores[0][k] for k in keys
+                    if all(p[k] == pores[0][k] for p in pores) and PORE_BUILTIN.get(k) != pores[0][k]}
+
+    def effective(k):
+        return defaults[k] if k in defaults else PORE_BUILTIN.get(k)
 
     def val(k, v):
         if k == "type":
@@ -122,7 +134,9 @@ def to_toml(pores, res, src):
         return fmt(v)
 
     L = [f"# network.toml converted from {src} by tools/network_in_to_toml.py",
-         "# Schema: see input_files/network_schema.toml. All quantities nondimensional.",
+         "# Schema and built-in defaults: input_files/network_schema.toml. All quantities nondimensional.",
+         "# Omitted keys use [defaults], then built-ins (pores: slit, not dead-end, area 1, c0 1;",
+         "# reservoirs: slit, c0 1, volume 0, pressure 0).",
          ""]
     if defaults:
         L.append("[defaults]   # used by any pore that doesn't set the key itself")
@@ -135,21 +149,26 @@ def to_toml(pores, res, src):
         L.append(f"id = {k}")
         L.append(f"ends = [{p['ends'][0]}, {p['ends'][1]}]   # [inlet reservoir, outlet reservoir]")
         for key in keys:
-            if key not in defaults:
+            if p[key] != effective(key):
                 L.append(f"{key} = {val(key, p[key])}")
         L.append("")
     for k, r in enumerate(res):
         L.append("[[reservoirs]]")
         L.append(f"id = {k}")
-        L.append(f'type = "{TYPES[r["type"]]}"')
+        if r["type"] != RES_BUILTIN["type"]:
+            L.append(f'type = "{TYPES[r["type"]]}"')
         L.append(f"pressure_known = {'true' if r['p_flag'] == 0 else 'false'}")
         L.append(f"potential_known = {'true' if r['mu_flag'] == 0 else 'false'}")
-        L.append(f"pressure = {fmt(r['pressure'])}   # ignored: solver sets reservoir pressure to 0")
+        if r["pressure"] != RES_BUILTIN["pressure"]:
+            L.append(f"pressure = {fmt(r['pressure'])}   # ignored: solver sets reservoir pressure to 0")
         L.append(f"potential = {fmt(r['potential'])}")
-        L.append(f"c0 = {fmt(r['c0'])}")
-        L.append(f"sigma_star = {fmt(r['sigma_star'])}")
-        L.append(f"lambda_D = {fmt(r['lambda_D'])}")
-        L.append(f"volume = {fmt(r['volume'])}")
+        if r["c0"] != RES_BUILTIN["c0"]:
+            L.append(f"c0 = {fmt(r['c0'])}")
+        for key in ("sigma_star", "lambda_D"):   # inherited from [defaults] if equal
+            if defaults.get(key) != r[key]:
+                L.append(f"{key} = {fmt(r[key])}")
+        if r["volume"] != RES_BUILTIN["volume"]:
+            L.append(f"volume = {fmt(r['volume'])}")
         L.append("")
     return "\n".join(L)
 

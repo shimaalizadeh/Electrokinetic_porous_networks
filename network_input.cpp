@@ -16,6 +16,15 @@ using std::to_string;
 
 namespace {
 
+// Built-in defaults: precedence is entry field > [defaults] table > these values.
+// Only neutral values get a built-in; physics-defining fields stay required.
+constexpr bool   kDefaultDeadEnd = false;  // pore: not a dead end
+constexpr double kDefaultArea    = 1.0;    // pore: unit (reference) cross-section
+constexpr double kDefaultC0      = 1.0;    // pore + reservoir: reference concentration
+constexpr double kDefaultVolume  = 0.0;    // reservoir: end reservoir (no volume)
+constexpr double kDefaultPressure = 0.0;   // reservoir: ignored anyway (solver forces 0)
+// type defaults to "slit" in get_type().
+
 [[noreturn]] void fail(const fs::path& file, const string& msg) {
     throw runtime_error(file.string() + ": " + msg);
 }
@@ -112,8 +121,9 @@ const toml::node* lookup(const toml::table& item, const toml::table* defaults, c
 }
 
 double get_double(const toml::table& item, const toml::table* defaults, const char* key,
-                  const fs::path& file, const string& tag) {
+                  const fs::path& file, const string& tag, std::optional<double> builtin = std::nullopt) {
     const toml::node* n = lookup(item, defaults, key);
+    if (!n && builtin) return *builtin;
     if (!n) fail(file, tag + ": missing '" + key + "'" + (defaults ? " (and no value in [defaults])" : ""));
     if (auto v = n->value_exact<double>()) return *v;
     if (auto v = n->value_exact<int64_t>()) return static_cast<double>(*v);
@@ -231,7 +241,7 @@ NetworkInput read_network_toml(const fs::path& file, int num_pores, int num_rese
         check_keys(t, {"id", "ends", "profile", "type", "dead_end", "length", "n_cells", "sigma_star", "lambda_D", "area", "c0"}, file, tag);
         PoreInput& p = net.pores[id];
         p.type = get_type(t, defaults, file, tag);
-        p.dead_end = get_bool(t, defaults, "dead_end", file, tag, false) ? 1 : 0;
+        p.dead_end = get_bool(t, defaults, "dead_end", file, tag, kDefaultDeadEnd) ? 1 : 0;
         const toml::array* ends = t["ends"].as_array();
         if (!ends || ends->size() != 2 || !(*ends)[0].is_integer() || !(*ends)[1].is_integer())
             fail(file, tag + ": 'ends' must be [inlet_reservoir, outlet_reservoir]");
@@ -241,8 +251,8 @@ NetworkInput read_network_toml(const fs::path& file, int num_pores, int num_rese
         p.n_cells = static_cast<int>(get_int(t, defaults, "n_cells", file, tag));
         p.sigma_star = get_double(t, defaults, "sigma_star", file, tag);
         p.lambda_D = get_double(t, defaults, "lambda_D", file, tag);
-        p.area = get_double(t, defaults, "area", file, tag);
-        p.c0 = get_double(t, defaults, "c0", file, tag);
+        p.area = get_double(t, defaults, "area", file, tag, kDefaultArea);
+        p.c0 = get_double(t, defaults, "c0", file, tag, kDefaultC0);
         if (auto prof = t["profile"].value<string>()) {
             fs::path pf = fs::path(*prof).is_absolute() ? fs::path(*prof) : file.parent_path() / *prof;
             p.profile = read_profile_csv(pf);
@@ -264,12 +274,12 @@ NetworkInput read_network_toml(const fs::path& file, int num_pores, int num_rese
         // TOML uses the physical meaning; the solver's raw flag is the opposite (0 = known).
         r.pressure_flag = !get_bool(t, nullptr, "pressure_known", file, tag);
         r.potential_flag = !get_bool(t, nullptr, "potential_known", file, tag);
-        r.pressure = t.get("pressure") ? get_double(t, nullptr, "pressure", file, tag) : 0.;
+        r.pressure = get_double(t, nullptr, "pressure", file, tag, kDefaultPressure);
         r.potential = get_double(t, nullptr, "potential", file, tag);
-        r.c0 = get_double(t, nullptr, "c0", file, tag);
-        r.sigma_star = get_double(t, nullptr, "sigma_star", file, tag);
-        r.lambda_D = get_double(t, nullptr, "lambda_D", file, tag);
-        r.volume = get_double(t, nullptr, "volume", file, tag);
+        r.c0 = get_double(t, nullptr, "c0", file, tag, kDefaultC0);
+        r.sigma_star = get_double(t, defaults, "sigma_star", file, tag);
+        r.lambda_D = get_double(t, defaults, "lambda_D", file, tag);
+        r.volume = get_double(t, nullptr, "volume", file, tag, kDefaultVolume);
     }
 
     net.connections = connections_from_ends(net.pores);

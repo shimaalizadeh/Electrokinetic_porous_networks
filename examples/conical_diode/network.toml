@@ -1,11 +1,11 @@
 # network.toml converted from Network.in by tools/network_in_to_toml.py
-# Schema: see input_files/network_schema.toml. All quantities nondimensional.
+# Schema and built-in defaults: input_files/network_schema.toml. All quantities nondimensional.
+# Omitted keys use [defaults], then built-ins (pores: slit, not dead-end, area 1, c0 1;
+# reservoirs: slit, c0 1, volume 0, pressure 0).
 
 [defaults]   # used by any pore that doesn't set the key itself
 type = "circular"
-dead_end = false
 n_cells = 100
-c0 = 1.0
 
 [[pores]]
 id = 0
@@ -13,7 +13,6 @@ ends = [0, 1]   # [inlet reservoir, outlet reservoir]
 length = 0.5
 sigma_star = -54.6549
 lambda_D = 0.0019476
-area = 1.0
 
 [[pores]]
 id = 1
@@ -85,28 +84,22 @@ ends = [9, 10]   # [inlet reservoir, outlet reservoir]
 length = 0.5
 sigma_star = -54.6549
 lambda_D = 0.0019476
-area = 1.0
 
 [[reservoirs]]
 id = 0
 type = "circular"
 pressure_known = true
 potential_known = true
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 20.0
-c0 = 1.0
 sigma_star = -54.6549
 lambda_D = 0.0019476
-volume = 0.0
 
 [[reservoirs]]
 id = 1
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -54.6549
 lambda_D = 0.0019476
 volume = 9.93169e-07
@@ -116,9 +109,7 @@ id = 2
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -48.0908
 lambda_D = 0.0247904
 volume = 7.71508e-06
@@ -128,9 +119,7 @@ id = 3
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -78.9271
 lambda_D = 0.015105
 volume = 2.07811e-05
@@ -140,9 +129,7 @@ id = 4
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -109.763
 lambda_D = 0.0108615
 volume = 4.01912e-05
@@ -152,9 +139,7 @@ id = 5
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -140.6
 lambda_D = 0.00847933
 volume = 6.59454e-05
@@ -164,9 +149,7 @@ id = 6
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -171.436
 lambda_D = 0.00695415
 volume = 9.80438e-05
@@ -176,9 +159,7 @@ id = 7
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -202.272
 lambda_D = 0.00589399
 volume = 0.000136486
@@ -188,9 +169,7 @@ id = 8
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -233.109
 lambda_D = 0.00511432
 volume = 0.000181273
@@ -200,9 +179,7 @@ id = 9
 type = "circular"
 pressure_known = false
 potential_known = false
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -54.6549
 lambda_D = 0.0019476
 volume = 0.000181273
@@ -212,9 +189,6 @@ id = 10
 type = "circular"
 pressure_known = true
 potential_known = true
-pressure = 0.0   # ignored: solver sets reservoir pressure to 0
 potential = 0.0
-c0 = 1.0
 sigma_star = -54.6549
 lambda_D = 0.0019476
-volume = 0.0
