@@ -397,7 +397,7 @@ void Network::store_reservoir_data(double *data, double*Reservoir_data){
  return;
 }
 
-void Network::update_C_bar(int myid, double tt){
+void Network::update_C_bar(double tt){
 
   for(int i=0; i<Total_Cells; i++)
     {

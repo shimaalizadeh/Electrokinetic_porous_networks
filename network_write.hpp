@@ -10,16 +10,15 @@
 using namespace std;
 
 
-void Mesh_Generation(int Num_Channel, int Num_Reservoir, int *Ns, int *Nt, int *Nz, double *ds, double *dn, double *dz, double *theta, double *x0, double *y0, double *z0);
+void Mesh_Generation(int Num_Channel, int *Ns, int *Nt, int *Nz, double *ds, double *dn, double *dz, double *theta, double *x0, double *y0, double *z0);
 
-void write(int Num_Channel, int Num_Reservoir, int *Ns, double *C_bar, double *Reservoir_C_bar, double *C0, double *Reservoir_C0, double *Pressure, double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, double* U, int num_h_pores, int time);
+void write(int Num_Channel, int *Ns, double *C_bar, double *C0, double *Pressure, double *Potential, double* U, int num_h_pores, int time);
 
 void write_current_flow(int Num_channel, double *Q, double *I, double *S);
 
 
 /*********IMPLEMENTATIONS*********/
-
-void Mesh_Generation(int Num_Channel, int Num_Reservoir, int *Ns, int *Nt, int *Nz, 
+void Mesh_Generation(int Num_Channel, int *Ns, int *Nt, int *Nz, 
 double *ds, double *dn, double *dz, double *theta, double *x0, double *y0, double *z0){
 
   ////Creating Mesh file
@@ -87,9 +86,8 @@ return;
 }
 
 
-void write(int Num_Channel, int Num_Reservoir, int *Ns, double *C_bar, 
-double *Reservoir_C_bar, double *C0, double *Reservoir_C0, double *Pressure, 
-double *Reservoir_Pressure, double *Potential,double *Reservoir_Potential, double *U, int num_h_pores, int time)
+void write(int Num_Channel, int *Ns, double *C_bar, double *C0, double *Pressure, 
+double *Potential, double *U, int num_h_pores, int time)
 {
   int domain_num = Num_Channel;
 

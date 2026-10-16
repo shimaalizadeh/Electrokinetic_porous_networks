@@ -23,15 +23,15 @@ class Table{
 
   void Find_From_Table(double sigma_star, double lambda, double C_bar, int type, int idx);
     
-  void Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, double *C0, int **Channel_End_Reservoir, double *C_bar, double *Reservoir_C_bar, double time);
+  void Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, double *C0, int **Channel_End_Reservoir, double *C_bar, double *Reservoir_C_bar);
 
-  void do_table_reading(double *sigma_star,double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0,int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx, double time);
+  void do_table_reading(double *sigma_star,double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0,int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx);
     
-  void calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, int **Channel_End_Reservoir);
+  void calculate_A_B_f_RHS(double *C_bar, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, int **Channel_End_Reservoir);
 
-  void find_flux_n(double *C_bar, double *C0, double *dPdx, double *dMudx,double *nondimensional_Sp, double *dx, double *U, double time);
+  void find_flux_n(double *C_bar, double *dPdx, double *dMudx, double *U);
 
-  void solve_for_dc(Lapack  &solver, double *C_bar, double *rhs_cbar_part, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double scheme_factor, double *dC_bar);
+  void solve_for_dc(Lapack  &solver, double *rhs_cbar_part, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double scheme_factor, double *dC_bar);
 
   const double * give_f_bar(void){return(f_bar_);}
 

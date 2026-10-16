@@ -6,7 +6,6 @@
 #include "table.hpp"
 #include "mylapack.hpp"
 
-
 class NetworkSolver{
 
 	public:
@@ -32,7 +31,6 @@ class NetworkSolver{
 	double time;
 	int period;
 	int restart_period;
-	double right_voltage;
 	int counter;
 	int inner_iteration;
 	double time_scheme_factor;

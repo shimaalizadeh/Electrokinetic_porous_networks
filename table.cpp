@@ -858,7 +858,7 @@ if(floor(abs(sigma_star)/abs(sigma_star_min_))==0)
 return;
 }
 
-void Table::Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, double *C0, int **Channel_End_Reservoir, double *C_bar, double *Reservoir_C_bar, double time){
+void Table::Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, double *C0, int **Channel_End_Reservoir, double *C_bar, double *Reservoir_C_bar){
     
     //Importing table based on sigma_star and lambda_0
     Import_Table_1(lambda_for_table);
@@ -904,7 +904,7 @@ void Table::Find_Initial_C_bar(double *sigma_star, double *lambda_for_table, dou
     return;
 }
 
-void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, int **Channel_End_Reservoir){
+void Table::calculate_A_B_f_RHS(double *C_bar, double *Cs, double *lambda, double *nondimensional_Sp, double *dx, int **Channel_End_Reservoir){
     
   ////compute coeeficient in cell centers
   int type = 0;
@@ -1110,7 +1110,7 @@ void Table::calculate_A_B_f_RHS(double *C_bar, double *C0, double *Cs, double *l
         return;
 }
 
-void Table::do_table_reading(double *sigma_star, double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0, int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx, double time){
+void Table::do_table_reading(double *sigma_star, double *lambda_for_table, double *lambda, double *C_bar, double *C0, double *Reservoir_C0, int **Channel_End_Reservoir, double *Cs, double *nondimensional_Sp, double *dx){
 
   // Read from table
   cell_counter = 0;
@@ -1146,11 +1146,11 @@ void Table::do_table_reading(double *sigma_star, double *lambda_for_table, doubl
         Reservoir_C0[Channel_End_Reservoir[i][1]]=C0[cell_counter-1];
     }
 
-  calculate_A_B_f_RHS(C_bar, C0, Cs, lambda, nondimensional_Sp, dx, Channel_End_Reservoir);
+  calculate_A_B_f_RHS(C_bar, Cs, lambda, nondimensional_Sp, dx, Channel_End_Reservoir);
   return;
 }
 
-void Table::find_flux_n(double *C_bar, double *C0, double *dPdx, double *dMudx,double *nondimensional_Sp, double *dx, double *U, double time){
+void Table::find_flux_n(double *C_bar, double *dPdx, double *dMudx, double *U){
    
     ////Velocity and flux in time step n
     face_counter=0;
@@ -1197,7 +1197,7 @@ void Table::find_flux_n(double *C_bar, double *C0, double *dPdx, double *dMudx,d
     return;
 }
 
-void Table::solve_for_dc(Lapack  &solver, double *C_bar, double *rhs_cbar_part, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double scheme_factor, double *dC_bar)
+void Table::solve_for_dc(Lapack  &solver, double *rhs_cbar_part, double *dMudx, double *U, double *nondimensional_Sp, bool *Reservoir_Pressure_Type,  bool *Reservoir_Potential_Type, double *Reservoir_Volume, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, double *dx, double dt, double scheme_factor, double *dC_bar)
 {
     ////setting everything to zero
     for(int i=0; i<Total_Cells_-1; i++)

@@ -29,7 +29,7 @@ class Network{
     void set_dt(void);
     void compute_gradients(void);
     void store_reservoir_data(double *data, double*Reservoir_data);
-    void update_C_bar(int myid, double tt);
+    void update_C_bar(double tt);
     void update_Old_Cbar(void);
     void compute_first_iteration_rhs_cbar_part(void);
     void compute_rhs_cbar_part(void);

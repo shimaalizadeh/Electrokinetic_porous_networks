@@ -191,7 +191,7 @@ void Lapack::dgtsv(double *DL, double *D, double *DU, double *B, int n_, int nrh
     return;
 }
 
-void Lapack::find_three_P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_,  double *dx, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3 ){
+void Lapack::find_three_P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3 ){
     
     ////setting to zero
     for(int j=0; j<2*Total_Cells_; j++)
@@ -463,7 +463,7 @@ void Lapack::find_final_P_Phi_Q_I(double *Q1, double *Q2, double *Q3, double *I1
 }
 
 
-void Lapack::P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *RHS_, double *dx, int **Channel_End_Reservoir, double *f_1_x_, double *f_2_x_,  double *Q, double *I, double *Pressure, double *Potential){
+void Lapack::P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *RHS_, int **Channel_End_Reservoir, double *f_1_x_, double *f_2_x_,  double *Q, double *I, double *Pressure, double *Potential){
  for(int j=0; j<2*Total_Cells_; j++)
     {
         for(int i=0; i<ldab; i++)
@@ -599,9 +599,9 @@ void Lapack::P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, d
 
 
 
-void Lapack::solve(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, double *dx, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, bool *Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, double *Reservoir_Pressure_Value, double *Reservoir_Potential_Value, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3, double *Q, double *I, double *Pressure, double *Potential){
+void Lapack::solve(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, bool *Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, double *Reservoir_Pressure_Value, double *Reservoir_Potential_Value, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3, double *Q, double *I, double *Pressure, double *Potential){
     
-    find_three_P_Phi(A1_x_, B1_x_, A2_x_, B2_x_, f_1_x_, f_2_x_, S_x_, RHS_, dx, Q1, Q2, Q3, I1, I2, I3);
+    find_three_P_Phi(A1_x_, B1_x_, A2_x_, B2_x_, f_1_x_, f_2_x_, S_x_, RHS_, Q1, Q2, Q3, I1, I2, I3);
     
     find_reservoir_P_Phi(Q1, Q2, Q3, I1, I2, I3, Connectivity, Connecting_Channel,Reservoir_Pressure_Type, Reservoir_Potential_Type, Reservoir_Pressure_Value, Reservoir_Potential_Value);
     

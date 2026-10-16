@@ -14,7 +14,7 @@ using namespace std;
 int main(int argc, char *argv[]){
     
     //////////////////////////Initialize MPI///////////////////////
-    int myid=0, num_procs=0;   
+    int myid=0;
   
     // get arguments
     if(argc != 10){

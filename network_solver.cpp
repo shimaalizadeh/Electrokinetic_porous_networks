@@ -71,11 +71,11 @@ void NetworkSolver::solve()
 
 			network.C_bar, network.C0, network.Reservoir_C0, network.Channel_End_Reservoir, 
 
-			network.Cs, network.nondimensional_Sp, network.dx, time);
+			network.Cs, network.nondimensional_Sp, network.dx);
 
 			solver.solve(table.A1_x_, table.B1_x_, table.A2_x_, table.B2_x_, table.f1_x_, 
 
-			table.f2_x_, table.S_x_, table.RHS_, network.dx, network.Connectivity, 
+			table.f2_x_, table.S_x_, table.RHS_, network.Connectivity, 
 
 			network.Connecting_Channel, network.Channel_End_Reservoir, 
 
@@ -94,16 +94,15 @@ void NetworkSolver::solve()
        			// compute dPdx and dMudx
        			network.compute_gradients();
 
-       			table.find_flux_n(network.C_bar, network.C0, network.dPdx, network.dMudx, 
-			network.nondimensional_Sp, network.dx, network.U, time);
+       			table.find_flux_n(network.C_bar, network.dPdx, network.dMudx, network.U);
 
-			table.solve_for_dc(solver, network.C_bar, network.rhs_cbar_part, network.dMudx, 
+			table.solve_for_dc(solver, network.rhs_cbar_part, network.dMudx, 
 			network.U, network.nondimensional_Sp, network.Reservoir_Pressure_Type, 
 			network.Reservoir_Potential_Type, network.Reservoir_Volume, network.Connectivity, 
 			network.Connecting_Channel, network.Channel_End_Reservoir, network.dx, dt,
 			time_scheme_factor, network.dC_bar);
 
-       			network.update_C_bar(myid, time);
+       			network.update_C_bar(time);
 
 			////Storing Reservoir C_bar
 			network.store_reservoir_data(network.C_bar, network.Reservoir_C_bar);
@@ -134,10 +133,8 @@ void NetworkSolver::solve()
   	}//End of while
 
   	////Final writing
-	write(Num_Channel, Num_Reservoir, network.Channel_Num_Cells, network.C_bar, 
-	network.Reservoir_C_bar, network.C0, network.Reservoir_C0, network.Pressure, 
-	network.Reservoir_Pressure, network.Potential, network.Reservoir_Potential, network.U, h_pores, counter);
-
+	  write(Num_Channel, network.Channel_Num_Cells, network.C_bar, network.C0,
+		network.Pressure, network.Potential, network.U, h_pores, counter);
 	////write currents, flowrates, area cross-sections
 	write_current_flow(Num_Channel, network.Q, network.I, network.nondimensional_Sp);
 
@@ -161,7 +158,7 @@ void NetworkSolver::solve_first_iteration(void){
 
 		table.Find_Initial_C_bar(network.sigma_star, network.lambda_for_table, network.C0,
 			         network.Channel_End_Reservoir, network.C_bar, 
-				 network.Reservoir_C_bar, network.time);
+				 network.Reservoir_C_bar);
 
   	}
   	else
@@ -193,11 +190,11 @@ void NetworkSolver::solve_first_iteration(void){
 
 		table.do_table_reading(network.sigma_star,network.lambda_for_table, network.lambda,
 		network.C_bar, network.C0, network.Reservoir_C0, network.Channel_End_Reservoir, 
-		network.Cs, network.nondimensional_Sp, network.dx, time);
+		network.Cs, network.nondimensional_Sp, network.dx);
 		cout<<"shima1"<<endl;
 
 		solver.solve(table.A1_x_, table.B1_x_, table.A2_x_, table.B2_x_, table.f1_x_, 
-		table.f2_x_, table.S_x_, table.RHS_, network.dx, network.Connectivity, 
+		table.f2_x_, table.S_x_, table.RHS_, network.Connectivity, 
 		network.Connecting_Channel, network.Channel_End_Reservoir, network.Reservoir_Pressure_Type,
 		network.Reservoir_Potential_Type, network.Reservoir_Pressure_Value, 
 		network.Reservoir_Potential_Value, network.Q1, network.Q2, network.Q3, network.I1,
@@ -210,16 +207,15 @@ void NetworkSolver::solve_first_iteration(void){
        		// compute dPdx and dMudx
        		network.compute_gradients();
 
-       		table.find_flux_n(network.C_bar, network.C0, network.dPdx, network.dMudx, 
-		network.nondimensional_Sp, network.dx, network.U, time);
+       		table.find_flux_n(network.C_bar, network.dPdx, network.dMudx, network.U);
 
-		table.solve_for_dc(solver, network.C_bar, network.rhs_cbar_part, network.dMudx, 
+		table.solve_for_dc(solver, network.rhs_cbar_part, network.dMudx, 
 		network.U, network.nondimensional_Sp, network.Reservoir_Pressure_Type, 
 		network.Reservoir_Potential_Type, network.Reservoir_Volume, network.Connectivity, 
 		network.Connecting_Channel, network.Channel_End_Reservoir, network.dx, dt, 
 		time_scheme_factor, network.dC_bar);
 
-		network.update_C_bar(myid, time);
+		network.update_C_bar(time);
 				
 		////Storing Reservoir C_bar
 		network.store_reservoir_data(network.C_bar, network.Reservoir_C_bar);

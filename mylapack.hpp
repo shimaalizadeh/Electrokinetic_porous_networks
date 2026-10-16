@@ -69,15 +69,15 @@ public:
 
     void dgtsv(double *DL, double *D, double *DU, double *B, int n_, int nrhs_);
     
-    void  find_three_P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, double *dx, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3 );
+    void  find_three_P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3 );
     
     void  find_reservoir_P_Phi(double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3, int **Connectivity, int **Connecting_Channel, bool *Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, double *Reservoir_Pressure_Value, double *Reservoir_Potential_Value);
     
     void  find_final_P_Phi_Q_I(double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3, int **Channel_End_Reservoir, double *Q, double *I, double *Pressure, double *Potential);
 
-    void P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *RHS_, double *dx,  int **Channel_End_Reservoir, double *f_1_x_, double *f_2_x_, double *Q, double *I, double *Pressure, double *Potential);
+    void P_Phi(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *RHS_, int **Channel_End_Reservoir, double *f_1_x_, double *f_2_x_, double *Q, double *I, double *Pressure, double *Potential);
     
-    void  solve(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, double *dx, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, bool *Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, double *Reservoir_Pressure_Value, double *Reservoir_Potential_Value, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3, double *Q, double *I, double *Pressure, double *Potential);
+    void  solve(double *A1_x_, double *B1_x_, double *A2_x_, double *B2_x_, double *f_1_x_, double *f_2_x_, double *S_x_, double *RHS_, int **Connectivity, int **Connecting_Channel, int **Channel_End_Reservoir, bool *Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, double *Reservoir_Pressure_Value, double *Reservoir_Potential_Value, double *Q1, double *Q2, double *Q3, double *I1, double *I2, double *I3, double *Q, double *I, double *Pressure, double *Potential);
 
     void  find_reservoir_dc(double *Channel_Inlet_Flux_, double *Channel_Outlet_Flux_, double **three_inlet_flux_, double **three_outlet_flux_, bool*Reservoir_Pressure_Type, bool *Reservoir_Potential_Type, int **Connectivity, int **Connecting_Channel, double *Reservoir_Volume, double dt, double *reservoir_dc);
         
