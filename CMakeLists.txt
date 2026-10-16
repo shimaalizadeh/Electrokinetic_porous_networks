@@ -18,6 +18,7 @@ add_executable(ek_solver
   table.cpp
   mylapack.cpp
   config.cpp
+  network_input.cpp
 )
 
 target_include_directories(ek_solver SYSTEM PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/tomlplusplus)

@@ -1,0 +1,15 @@
+# Same run as run_single_pore.toml, but reading the TOML network (expect I_tot = 23.2686).
+[network]
+num_pores = 1
+num_reservoirs = 2
+num_horizontal_pores = 1
+
+[solver]
+dt = 1.0e-4
+max_time = 1.0
+write_every = 1000000
+restart = false
+
+[io]
+tables_dir = "tables/"
+network_file = "input_files/network.toml"   # .toml -> new reader, .in -> legacy reader

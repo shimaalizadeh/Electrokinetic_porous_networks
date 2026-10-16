@@ -1,5 +1,6 @@
 #include"network_info.hpp"
 #include <stdlib.h>
+#include "network_input.hpp"
 
 
 void Network::setup(int Num_Channel, int Num_Reservoir, int restart, double dt, double Tmax, double time, double period, string network_input_file){
@@ -188,20 +189,46 @@ return;
 
 void Network::Read_filename_1(string filename_1){
 
-ifstream read_1(filename_1);
-  
-//Reading Channel properties
+// Legacy Network.in or network.toml, picked by extension; both fill the same NetworkInput.
+NetworkInput net;
+try{
+	net = read_network_file(filename_1, Num_Channel, Num_Reservoir);
+}catch(const std::exception& err){
+	cerr<<"ERROR: "<<err.what()<<endl;
+	exit(EXIT_FAILURE);
+}
+
+//Channel properties
 for(int i=0; i<Num_Channel; i++){
 
-	read_1>>Channel_type[i]>>Channel_blocked[i]>>Channel_End_Reservoir[i][0]>>Channel_End_Reservoir[i][1]>>dx[i]>>Channel_Num_Cells[i]>>sigma_val[i]>>lambda_val[i]>>s_val[i]>>c0_val[i];
+	const PoreInput& p = net.pores[i];
+	Channel_type[i] = p.type;
+	Channel_blocked[i] = p.dead_end;
+	Channel_End_Reservoir[i][0] = p.ends[0];
+	Channel_End_Reservoir[i][1] = p.ends[1];
+	dx[i] = p.length;
+	Channel_Num_Cells[i] = p.n_cells;
+	sigma_val[i] = p.sigma_star;
+	lambda_val[i] = p.lambda_D;
+	s_val[i] = p.area;
+	c0_val[i] = p.c0;
 	  
 	dx[i]=dx[i]/Channel_Num_Cells[i];
 }
 
-//Reading Reservoir properties
+//Reservoir properties
 for(int i=0;i<Num_Reservoir;i++){
 
-	read_1>>Reservoir_type[i]>>Reservoir_Pressure_Type[i]>>Reservoir_Potential_Type[i]>>Reservoir_Pressure_Value[i]>>Reservoir_Potential_Value[i]>>Reservoir_C0[i]>>Reservoir_Sigma[i]>>Reservoir_Lambda[i]>>Reservoir_Volume[i];
+	const ReservoirInput& r = net.reservoirs[i];
+	Reservoir_type[i] = r.type;
+	Reservoir_Pressure_Type[i] = r.pressure_flag;
+	Reservoir_Potential_Type[i] = r.potential_flag;
+	Reservoir_Pressure_Value[i] = r.pressure;
+	Reservoir_Potential_Value[i] = r.potential;
+	Reservoir_C0[i] = r.c0;
+	Reservoir_Sigma[i] = r.sigma_star;
+	Reservoir_Lambda[i] = r.lambda_D;
+	Reservoir_Volume[i] = r.volume;
 
 	Reservoir_Potential_Value[i] = Reservoir_Potential_Value[i]; //EDITTED  + log(Reservoir_C0[i]);
 	//Reservoir_Pressure_Value[i] = -2*Reservoir_C0[i] + Reservoir_Pressure_Value[i];
@@ -226,15 +253,17 @@ Memory_Allocation();
    		
 cell_counter=0;
 for(int i=0; i<Num_Channel; i++){
+	const CellProfile* prof = net.pores[i].profile ? &*net.pores[i].profile : nullptr;
 	for(int j=1; j<Channel_Num_Cells[i]+1; j++){
 			
-		sigma_star[cell_counter+j] = sigma_val[i];
+		// per-cell profile (old Channels.in) overrides the per-pore value when given
+		sigma_star[cell_counter+j] = prof ? prof->sigma_star[j-1] : sigma_val[i];
 	  		
-	  	lambda[cell_counter+j] = lambda_val[i];
+	  	lambda[cell_counter+j] = prof ? prof->lambda_D[j-1] : lambda_val[i];
 	  		
-	  	nondimensional_Sp[cell_counter+j] = s_val[i];
+	  	nondimensional_Sp[cell_counter+j] = prof ? prof->Sp[j-1] : s_val[i];
 	  		
-	  	C0[cell_counter+j] = c0_val[i];
+	  	C0[cell_counter+j] = prof ? prof->C0[j-1] : c0_val[i];
 
 	  	Cs[cell_counter+j] = 2*lambda[cell_counter+j]*lambda[cell_counter+j]*(abs(sigma_star[cell_counter+j]));
 	  		
@@ -284,12 +313,12 @@ for(int i=0; i<Num_Reservoir; i++){
 	}
 }
 
-for(int i=0; i<Num_Channel; i++){
+for(const ConnectionInput& c : net.connections){
 	
-	  read_1>>row>>column;
+	  row = c.from; column = c.to;
 	  Connectivity[row][column] = 1;
 	  Connectivity[column][row] = -1;
-	  read_1>>Connecting_Channel[row][column];
+	  Connecting_Channel[row][column] = c.pore;
 	  Connecting_Channel[column][row] = Connecting_Channel[row][column];
 }
     
@@ -300,7 +329,6 @@ for(int i=0; i<Total_Cells; i++){
 }
 #endif
     
-read_1.close();
 return;
 
 }

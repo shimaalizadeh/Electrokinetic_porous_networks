@@ -1,0 +1,38 @@
+# network.toml converted from Network.in by tools/network_in_to_toml.py
+# Schema: see input_files/network_schema.toml. All quantities nondimensional.
+
+[[pores]]
+id = 0
+ends = [0, 1]   # [inlet reservoir, outlet reservoir]
+type = "circular"
+dead_end = false
+length = 0.6
+n_cells = 400
+sigma_star = -6.83186
+lambda_D = 0.779038
+area = 1.0
+c0 = 1.0
+
+[[reservoirs]]
+id = 0
+type = "circular"
+pressure_known = true
+potential_known = true
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 20.0
+c0 = 1.0
+sigma_star = -6.83186
+lambda_D = 0.779038
+volume = 0.0
+
+[[reservoirs]]
+id = 1
+type = "circular"
+pressure_known = false
+potential_known = true
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 0.0
+c0 = 0.1
+sigma_star = -6.83186
+lambda_D = 0.779038
+volume = 8.068e-05

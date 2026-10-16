@@ -27,3 +27,15 @@ under ./examples folder.
 ![alt text](https://github.com/shimaalizadeh/Electrokinetic_porous_networks/blob/master/toy_problem.png)
 
 
+
+## Network file: network.toml (new) or Network.in (legacy)
+
+The run config's `[io] network_file` picks the reader by extension: `.toml` uses the
+labeled format, anything else the legacy column format. Both fill the same solver
+arrays, so results are identical (checked on 5 example networks, see `examples/`).
+
+- Annotated schema: `input_files/network_schema.toml`
+- Example: `input_files/network.toml` + `run_single_pore_network_toml.toml` (I_tot = 23.2686)
+- Convert old files: `python3 tools/network_in_to_toml.py input_files/Network.in -p <num_pores> -r <num_reservoirs> -o input_files/network.toml`
+- Per-cell properties (old Channels.in): add `profile = "cells.csv"` to a pore; CSV header
+  `sigma_star,lambda_D,Sp,C0`, one row per cell.

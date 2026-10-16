@@ -1,0 +1,128 @@
+# network.toml converted from Toy6.in by tools/network_in_to_toml.py
+# Schema: see input_files/network_schema.toml. All quantities nondimensional.
+
+[defaults]   # used by any pore that doesn't set the key itself
+type = "slit"
+length = 0.6
+n_cells = 1600
+c0 = 1.0
+
+[[pores]]
+id = 0
+ends = [0, 1]   # [inlet reservoir, outlet reservoir]
+dead_end = false
+sigma_star = -30.0
+lambda_D = 0.017
+area = 1.0
+
+[[pores]]
+id = 1
+ends = [1, 3]   # [inlet reservoir, outlet reservoir]
+dead_end = false
+sigma_star = -30.0
+lambda_D = 0.017
+area = 1.0
+
+[[pores]]
+id = 2
+ends = [3, 5]   # [inlet reservoir, outlet reservoir]
+dead_end = true
+sigma_star = -30.0
+lambda_D = 0.017
+area = 1.0
+
+[[pores]]
+id = 3
+ends = [1, 2]   # [inlet reservoir, outlet reservoir]
+dead_end = false
+sigma_star = -15.0
+lambda_D = 0.034
+area = 0.5
+
+[[pores]]
+id = 4
+ends = [2, 4]   # [inlet reservoir, outlet reservoir]
+dead_end = false
+sigma_star = -15.0
+lambda_D = 0.034
+area = 0.5
+
+[[pores]]
+id = 5
+ends = [3, 4]   # [inlet reservoir, outlet reservoir]
+dead_end = false
+sigma_star = -15.0
+lambda_D = 0.034
+area = 0.5
+
+[[reservoirs]]
+id = 0
+type = "slit"
+pressure_known = true
+potential_known = true
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 40.0
+c0 = 1.0
+sigma_star = -30.0
+lambda_D = 0.017
+volume = 0.0
+
+[[reservoirs]]
+id = 1
+type = "slit"
+pressure_known = false
+potential_known = false
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 0.0
+c0 = 1.0
+sigma_star = -30.0
+lambda_D = 0.017
+volume = 8.068e-05
+
+[[reservoirs]]
+id = 2
+type = "slit"
+pressure_known = false
+potential_known = false
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 0.0
+c0 = 1.0
+sigma_star = -15.0
+lambda_D = 0.034
+volume = 8.068e-05
+
+[[reservoirs]]
+id = 3
+type = "slit"
+pressure_known = false
+potential_known = false
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 0.0
+c0 = 1.0
+sigma_star = -30.0
+lambda_D = 0.017
+volume = 5.072e-05
+
+[[reservoirs]]
+id = 4
+type = "slit"
+pressure_known = false
+potential_known = false
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 0.0
+c0 = 1.0
+sigma_star = -15.0
+lambda_D = 0.034
+volume = 7.602e-05
+
+[[reservoirs]]
+id = 5
+type = "slit"
+pressure_known = false
+potential_known = true
+pressure = 0.0   # ignored: solver sets reservoir pressure to 0
+potential = 0.0
+c0 = 0.1
+sigma_star = -30.0
+lambda_D = 0.017
+volume = 0.0

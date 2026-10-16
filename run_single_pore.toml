@@ -16,4 +16,4 @@ restart = false            # true = resume from input_files/network_final.in + c
 
 [io]
 tables_dir = "tables/"                    # precomputed coefficient tables
-network_file = "input_files/Network.in"   # network file (must be under input_files/)
+network_file = "input_files/Network.in"   # .in = legacy reader, .toml = network.toml reader (must be under input_files/)
