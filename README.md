@@ -3,6 +3,24 @@
 A multiscale, reduced-order model of nonlinear electrokinetic transport (ion transport driven by electric fields
 and pressure) in networks of microscale and nanoscale pores.
 
+**Single pore**: a charged pore between two reservoirs. Under an applied voltage a deionization shock
+moves into the pore and then stops.
+
+![single pore schematic](docs/figures/single_pore_schematic.png)
+
+Concentration C̄(x, t) along the pore (black = depleted); the dashed line is the shock front.
+
+![single pore spacetime](docs/figures/single_pore_spacetime.png)
+![single pore](docs/figures/single_pore_shock.gif)
+
+**H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
+grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
+
+![H-junction slit animation](docs/figures/hjunction_slit_C_bar.gif)
+
+MP4 versions: `docs/figures/*.mp4`.
+
+## About the model
 Each pore is a 1D channel whose cross-section physics (electric double layer, surface charge, slit or circular
 shape) is precomputed into look-up tables (`tables/`). The network couples these 1D pores through reservoirs
 (nodes) that conserve ions, charge and fluid. This makes it possible to simulate phenomena such as concentration
@@ -117,23 +135,6 @@ Other plots (`network`, `current`, 3D views) are listed in `ekpn-viz --help`.
 | H-junction | `examples/hjunction_reference/` | two microchannels joined by a nanochannel: depletion shock and enrichment |
 | H-junction (phd_codes input) | `examples/hjunction_phd_codes/` | the converted original input; needs the fine mesh to be stable |
 | Others | `examples/toy6_loop`, `circular_pore`, `conical_diode`, `hjunction` | flow loop, circular pore, conical pore |
-
-**Single pore**: a charged pore between two reservoirs. Under an applied voltage a deionization shock
-moves into the pore and then stops.
-
-![single pore schematic](docs/figures/single_pore_schematic.png)
-
-Concentration C̄(x, t) along the pore (black = depleted); the dashed line is the shock front.
-
-![single pore spacetime](docs/figures/single_pore_spacetime.png)
-![single pore](docs/figures/single_pore_shock.gif)
-
-**H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
-grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
-
-![H-junction slit animation](docs/figures/hjunction_slit_C_bar.gif)
-
-MP4 versions: `docs/figures/*.mp4`.
 
 ## Citation
 If you use this code, please cite:
