@@ -1,0 +1,57 @@
+# T-junction at V = 80 (reservoir 0), recommended mesh for the unchanged (central) solver, dt = 1e-4, max_time 0.05.
+# Pore 0 (inlet) 800 cells, junction branches 1 and 2 2400 cells (tools/mesh_study.py, 2026-10-16).
+# I_tot(0.05) = 55.779, +0.07% vs 12800 uniform (55.738). Uniform 400-2000 aborts; uniform 2400 is the coarsest uniform mesh that runs.
+# Synthetic T-junction: three identical slit pores meeting at internal node 3.
+[defaults]
+length = 0.6
+n_cells = 400
+sigma_star = -200.0
+lambda_D = 0.017
+
+[[pores]]
+id = 0
+n_cells = 800
+ends = [0, 3]
+
+[[pores]]
+id = 1
+n_cells = 2400
+ends = [3, 1]
+
+[[pores]]
+id = 2
+n_cells = 2400
+ends = [3, 2]
+
+[[reservoirs]]
+id = 0
+x = 0.0
+y = 0.0
+pressure_known = true
+potential_known = true
+potential = 80.0
+
+[[reservoirs]]
+id = 1
+x = 2.0
+y = 0.0
+pressure_known = true
+potential_known = true
+potential = 0.0
+
+[[reservoirs]]
+id = 2
+x = 1.0
+y = -1.0
+pressure_known = true
+potential_known = true
+potential = 0.0
+
+[[reservoirs]]
+id = 3
+x = 1.0
+y = 0.0
+pressure_known = false
+potential_known = false
+potential = 0.0
+volume = 8.068e-05
