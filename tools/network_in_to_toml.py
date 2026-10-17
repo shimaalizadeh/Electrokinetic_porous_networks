@@ -15,6 +15,21 @@ Legacy layout and how it maps:
   reservoir rows (9): type P_flag Mu_flag P Mu C0 sigma* lambda_D volume
   connectivity rows (num_pores): i j pore  -> dropped; TOML derives it from pore 'ends'
 
+Old (v0) format, from the private phd_codes solver: use --v0 [--channels Channels.in]
+  line 1: artificial-diffusion switch (ignored; the current solver has none)
+  pore rows (4):      in_res out_res length n_cells
+  reservoir rows (8): P_flag Mu_flag P Mu C0 sigma* lambda_D volume
+  connectivity rows:  i j pore
+  geometry rows (num_pores + num_reservoirs, 10 values): Tecplot/Blender writer, ignored
+  Channels.in: per cell "sigma* lambda_D Sp C0", read as one stream in pore order,
+  exactly like Read_filename_2 (rows beyond the total cell count are ignored).
+  Mapping: pore type = slit (the old solver only used the slit tables), dead_end = false;
+  a pore whose cells are all identical gets plain sigma_star/lambda_D/area/c0 fields,
+  otherwise a per-pore CSV profile next to the output file.
+  The old solver set reservoir mu = Mu + ln(C0) and P = P - 2*C0; the current solver
+  uses Mu as given and forces P = 0. The converter writes potential = Mu + ln(C0) (same
+  value as the old run); the pressure offset cannot be reproduced (ignored by the solver).
+
 Quirks preserved on purpose (behavior must not change):
   * The P/Mu flags are 0 = KNOWN (fixed value), 1 = solved for, i.e. the opposite of
     input_files/README.md. The TOML uses pressure_known = (flag == 0).
@@ -24,6 +39,7 @@ Quirks preserved on purpose (behavior must not change):
     pore k. The converter checks they agree and stops if they don't.
 """
 import argparse
+import math
 import sys
 from collections import Counter
 from pathlib import Path
@@ -91,6 +107,65 @@ def read_legacy(path, n_pores, n_res):
     return pores, res, conn, extra
 
 
+def read_v0(path, n_pores, n_res, channels=None, out_dir=None, stem="pore"):
+    toks = Path(path).read_text().split()
+    pos = 0
+
+    def take(n, what):
+        nonlocal pos
+        if pos + n > len(toks):
+            sys.exit(f"error: {path} ended early while reading {what} (v0 format)")
+        out = toks[pos:pos + n]
+        pos += n
+        return out
+
+    take(1, "artificial-diffusion switch")
+    pores = []
+    for i in range(n_pores):
+        t = take(4, f"pore row {i}")
+        pores.append(dict(type=0, dead_end=0, ends=[legacy_int(t[0], "inlet"), legacy_int(t[1], "outlet")],
+                          length=num(t[2], "length"), n_cells=legacy_int(t[3], "n_cells"),
+                          sigma_star=None, lambda_D=None, area=1.0, c0=1.0))
+    res = []
+    for i in range(n_res):
+        t = take(8, f"reservoir row {i}")
+        c0 = num(t[4], "C0")
+        res.append(dict(type=0, p_flag=legacy_int(t[0], "P flag"), mu_flag=legacy_int(t[1], "Mu flag"),
+                        pressure=num(t[2], "P") - 2 * c0, potential=num(t[3], "Mu") + math.log(c0),
+                        c0=c0, sigma_star=num(t[5], "sigma*"), lambda_D=num(t[6], "lambda_D"),
+                        volume=num(t[7], "volume")))
+    conn = [tuple(legacy_int(x, "connectivity") for x in take(3, f"connectivity row {i}"))
+            for i in range(n_pores)]
+    notes = [f"ignored {len(toks) - pos} trailing tokens (geometry rows)"] if len(toks) > pos else []
+    if channels is None:
+        sys.exit("error: v0 networks need --channels Channels.in (per-cell sigma*, lambda_D, Sp, C0)")
+    ct = Path(channels).read_text().split()
+    need = 4 * sum(p["n_cells"] for p in pores)
+    if len(ct) < need:
+        sys.exit(f"error: {channels} has {len(ct) // 4} cell rows, need {need // 4}")
+    if len(ct) > need:
+        notes.append(f"{channels}: ignored {(len(ct) - need) // 4} extra cell rows (old reader ignored them too)")
+    k = 0
+    for i, p in enumerate(pores):
+        rows = []
+        for _ in range(p["n_cells"]):
+            rows.append([num(x, "Channels.in value") for x in ct[k:k + 4]])
+            k += 4
+        if all(r == rows[0] for r in rows):
+            p["sigma_star"], p["lambda_D"], p["area"], p["c0"] = rows[0]
+        else:
+            name = f"{stem}{i}_cells.csv"
+            with open(Path(out_dir) / name, "w") as f:
+                f.write("sigma_star,lambda_D,Sp,C0\n")
+                for r in rows:
+                    f.write(",".join(fmt(v) for v in r) + "\n")
+            p["profile"] = name
+            # pore-level values are still required by the loader; use the first cell
+            p["sigma_star"], p["lambda_D"], p["area"], p["c0"] = rows[0]
+            notes.append(f"pore {i}: non-uniform cells -> {name}")
+    return pores, res, conn, notes
+
+
 def check(pores, res, conn):
     derived = sorted((p["ends"][0], p["ends"][1], k) for k, p in enumerate(pores))
     if sorted(conn) != derived:
@@ -148,6 +223,8 @@ def to_toml(pores, res, src):
         L.append("[[pores]]")
         L.append(f"id = {k}")
         L.append(f"ends = [{p['ends'][0]}, {p['ends'][1]}]   # [inlet reservoir, outlet reservoir]")
+        if p.get("profile"):
+            L.append(f'profile = "{p["profile"]}"   # per-cell values override the pore values below')
         for key in keys:
             if p[key] != effective(key):
                 L.append(f"{key} = {val(key, p[key])}")
@@ -179,15 +256,21 @@ def main():
     ap.add_argument("-p", "--num-pores", type=int, required=True)
     ap.add_argument("-r", "--num-reservoirs", type=int, required=True)
     ap.add_argument("-o", "--output", help="default: same folder, network.toml")
+    ap.add_argument("--v0", action="store_true", help="old phd_codes format (see above)")
+    ap.add_argument("--channels", help="v0 only: Channels.in with per-cell values")
     a = ap.parse_args()
-    pores, res, conn, extra = read_legacy(a.network_in, a.num_pores, a.num_reservoirs)
-    check(pores, res, conn)
     out = Path(a.output) if a.output else Path(a.network_in).with_name("network.toml")
-    out.write_text(to_toml(pores, res, Path(a.network_in).name))
-    msg = f"wrote {out} ({len(pores)} pores, {len(res)} reservoirs)"
-    if extra:
-        msg += f"; ignored {extra} trailing tokens after connectivity (the solver ignores them too)"
-    print(msg)
+    if a.v0:
+        pores, res, conn, notes = read_v0(a.network_in, a.num_pores, a.num_reservoirs,
+                                          a.channels, out.parent, out.stem + "_pore")
+    else:
+        pores, res, conn, extra = read_legacy(a.network_in, a.num_pores, a.num_reservoirs)
+        notes = [f"ignored {extra} trailing tokens after connectivity (the solver ignores them too)"] if extra else []
+    check(pores, res, conn)
+    out.write_text(to_toml(pores, res, Path(a.network_in).name + (" (v0 format)" if a.v0 else "")))
+    print(f"wrote {out} ({len(pores)} pores, {len(res)} reservoirs)")
+    for n in notes:
+        print("  note:", n)
 
 
 if __name__ == "__main__":
