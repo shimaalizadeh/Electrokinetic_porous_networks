@@ -64,6 +64,7 @@ potential = 80.0     # electrochemical potential (thermal volts)
 c0 = 1.0             # built-in 1.0. concentration
 sigma_star = -200.0  # reservoir sigma*
 lambda_D = 0.017     # reservoir lambda_D (used for the table lookups)
+# x = 0.0  y = 0.0   # optional plot coordinates for ekpn-viz (ignored by the solver)
 volume = 0.0         # built-in 0.0. 0 for end reservoirs with P and mu both known; > 0 for internal nodes
 
 [[reservoirs]]

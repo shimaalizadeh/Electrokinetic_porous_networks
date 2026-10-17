@@ -268,7 +268,8 @@ NetworkInput read_network_toml(const fs::path& file, int num_pores, int num_rese
         if (!seen.insert(id).second) fail(file, tag + ": duplicate reservoir id " + to_string(id));
         tag = "reservoir " + to_string(id);
         check_keys(t, {"id", "type", "pressure_known", "potential_known", "pressure", "potential",
-                       "c0", "sigma_star", "lambda_D", "volume"}, file, tag);
+                       "c0", "sigma_star", "lambda_D", "volume",
+                       "x", "y"}, file, tag);  // x, y: optional plot coordinates, ignored by the solver
         ReservoirInput& r = net.reservoirs[id];
         r.type = get_type(t, nullptr, file, tag);
         // TOML uses the physical meaning; the solver's raw flag is the opposite (0 = known).

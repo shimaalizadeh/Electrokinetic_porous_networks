@@ -108,18 +108,15 @@ void NetworkSolver::solve()
 			network.store_reservoir_data(network.C_bar, network.Reservoir_C_bar);
 
 		}
-#if 0
+		// periodic snapshot (Tecplot_XXXX.bin), every write_every steps
 		if( int(time/dt) % network.period == 0){
 
-			write(Num_Channel, Num_Reservoir, network.Channel_Num_Cells,  
-			network.C_bar, network.Reservoir_C_bar, network.C0, network.Reservoir_C0, 
-			network.Pressure, network.Reservoir_Pressure, network.Potential,
-			network.Reservoir_Potential, network.U, h_pores, counter);
+			write(Num_Channel, network.Channel_Num_Cells, network.C_bar, network.C0,
+			network.Pressure, network.Potential, network.U, h_pores, counter);
 
 			counter++;
 
    	        }
-#endif
 		if( int(time/dt) % restart_period == 0){
 
 			//write restart files
@@ -170,15 +167,12 @@ void NetworkSolver::solve_first_iteration(void){
   	network.store_reservoir_data(network.C_bar, network.Reservoir_C_bar);
   	network.store_reservoir_data(network.Pressure, network.Reservoir_Pressure);
   	network.store_reservoir_data(network.Potential, network.Reservoir_Potential);
-#if 0
 	////initial writing
 	if( int(time/dt) % network.period == 0){
-		write(Num_Channel, Num_Reservoir, network.Channel_Num_Cells, network.C_bar, 
-		network.Reservoir_C_bar, network.C0, network.Reservoir_C0, network.Pressure, 
-		network.Reservoir_Pressure, network.Potential, network.Reservoir_Potential, network.U, h_pores, counter);
+		write(Num_Channel, network.Channel_Num_Cells, network.C_bar, network.C0,
+		network.Pressure, network.Potential, network.U, h_pores, counter);
 		counter++;
 	}
-#endif
 
     //// start inner loop
 	time += dt;
