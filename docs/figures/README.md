@@ -14,7 +14,7 @@ Same physics as the I_tot = 23.2686 baseline, with frequent snapshots over the f
     ekpn-viz single-pore run --network run/input_files/Network.in --dt 1e-4 --write-every 2 \
         --log run/log.txt --out docs/figures --mp4 --stop-at-stall
 
-`--stop-at-stall` ends all single-pore figures and the video when the front first comes within 1% of the pore
+`--stop-at-stall` ends the single-pore space-time plot and the video when the front first comes within 1% of the pore
 length of its final position (here x = 0.055 at t = 0.032); the stalled period after that is left out.
 
 - `single_pore_schematic.png`: drawing of a charged pore between two reservoirs
@@ -22,7 +22,7 @@ length of its final position (here x = 0.055 at t = 0.032); the stalled period a
 - `single_pore_spacetime.png`: C_bar(x, t), x across and t up, black = depleted, dashed line = front
   (C_bar = C_bar_inlet / 2); layout follows Alizadeh, PhD dissertation, Stanford University, 2017
 - `single_pore_thickness.png`: shock thickness vs t, where thickness = C_bar_inlet / |dC_bar/dx| at the half
-  level (the tangent there, run from C_bar = 0 to C_bar_inlet), with a t^1/2 fit up to the peak thickness
+  level (the tangent there, run from C_bar = 0 to C_bar_inlet), with a t^1/2 fit; curve and fit both end at the peak thickness (t = 0.0206)
 - `single_pore_shock.mp4` / `.gif`: the front, animated
 
 ## H-junction (`hjunction_*`)

@@ -115,11 +115,12 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
     pw = np.polyfit(np.log(times[prop]), np.log(th[prop]), 1) if prop.sum() > 2 else [np.nan, np.nan]
     r2 = 1 - np.sum((th[prop] - a * np.sqrt(times[prop])) ** 2) / np.sum((th[prop] - th[prop].mean()) ** 2)
     fig, ax = plt.subplots(figsize=(6.0, 4.4))
-    ax.plot(times, th, "b-", lw=1.6, label="Present model")
     tf = times[prop]
+    kend = (np.nonzero(times <= tf[-1])[0][-1] + 1) if tf.size else len(times)  # stop at peak thickness
+    ax.plot(times[:kend], th[:kend], "b-", lw=1.6, label="Present model")
     ax.plot(tf, a * np.sqrt(tf), "r--", lw=1.6, label=r"$t^{1/2}$ fit")
     ax.set_xlabel("t"); ax.set_ylabel(r"$\delta$")
-    ax.set_xlim(0, times[-1]); ax.set_ylim(0, None)
+    ax.set_xlim(0, 1.03 * times[kend - 1]); ax.set_ylim(0, None)
     ax.legend(frameon=False, loc="lower right")
     fig.tight_layout(); fig.savefig(pre + "_thickness.png", dpi=140); plt.close(fig)
     print(f"thickness fit: delta = {a:.4g} t^0.5 over t <= {tf[-1] if tf.size else np.nan:.4g}, "

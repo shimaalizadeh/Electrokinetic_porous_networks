@@ -18,7 +18,7 @@ Left: the pore between two reservoirs. Right: the shock moving into the pore.
   <img src="docs/figures/single_pore_thickness.png" width="49%" alt="single pore shock thickness">
 </p>
 
-Left: C̄(x, t), black = depleted, dashed line = shock front. Right: shock thickness, which grows like t^1/2 while the front moves freely. Both end when the front reaches the inlet end.
+Left: C̄(x, t), black = depleted, dashed line = shock front. Right: shock thickness, which grows like t^1/2 while the front moves freely (shown up to its peak).
 
 **H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
 grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
