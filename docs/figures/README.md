@@ -27,15 +27,10 @@ bottom channel grounded. Snapshots every 50 steps to t = 0.03 plus every 1000 st
 by symlinking Tecplot files under one write_every = 50 numbering).
 
     R=run; N=examples/hjunction_reference/network.toml; C="--network $N --dt 1e-5 --write-every 50 --log $R/log.txt"
-    ekpn-viz network $R $C --prefix hjunction --times 0.002,0.02,0.1,0.75 --shape slit \
-        --title "H-junction: C̄ in the slit channels (channel lengths to scale, bridge not)"
     ekpn-viz animate $R $C --prefix hjunction_slit --paths "0,1;3,4" --shape slit --title "H-junction, slit channels"
     ekpn-viz render3d $R --network $N --dt 1e-5 --write-every 50 --times 0.75 --prefix hjunction_3d
 
-- `hjunction_C_bar_slit.png`: the network drawn as flat slit channels (oblique view, like the schematic in the
-  top-level README) coloured by C_bar at four times; channel lengths to scale (bottom 1.32x top), the 90 um bridge
-  drawn short but not to scale and inset at the channel edges; slit width ~ area
-- `hjunction_slit_C_bar.mp4` / `.gif`: the same, animated, with C_bar along both channels
+- `hjunction_slit_C_bar.mp4` / `.gif`: the network drawn as slit channels coloured by C_bar (channel lengths to scale, bridge drawn short), animated, with C_bar along both channels
 - `hjunction_3d_C_bar_t0.75.png`: render3d (PyVista tubes, log colour scale) at t = 0.75
 
 ## T-junction (`tjunction_*`)

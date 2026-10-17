@@ -132,7 +132,6 @@ Concentration C̄(x, t) along the pore (black = depleted); the dashed line is th
 grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
 
 ![H-junction slit animation](docs/figures/hjunction_slit_C_bar.gif)
-![H-junction slit map](docs/figures/hjunction_C_bar_slit.png)
 
 MP4 versions: `docs/figures/*.mp4`.
 
