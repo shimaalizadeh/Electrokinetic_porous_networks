@@ -126,15 +126,6 @@ grows in the top channel next to the nanochannel and an enriched zone forms in t
 
 MP4 versions: `docs/figures/*.mp4`.
 
-## Status and roadmap
-This is research code, being tidied for reuse. Known limitations and plans:
-- **Numerics**: concentration positivity and stability are not guaranteed on coarse meshes or at high voltage;
-  for now the fix is mesh refinement (`docs/mesh_study.md`). A positivity-preserving and more robust scheme is planned.
-- **Uncertainty quantification**: non-intrusive spectral projection (NISP) / stochastic collocation over
-  pore properties.
-- **Large networks**: Blender rendering of large random networks (the VTK export is a first step).
-- **Code**: a modern C++ refactor (RAII, no manual memory management, clearer interfaces).
-
 ## Citation
 If you use this code, please cite:
 - S. Alizadeh, *Nonlinear Electrokinetic Transport in Microscale and Nanoscale Porous Structures*,
