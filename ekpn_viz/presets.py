@@ -22,6 +22,22 @@ def front_position(x, c, frac=0.5):
     return x[below[0]] if below.size else np.nan
 
 
+def shock_thickness(x, C, frac=0.5):
+    """Shock thickness per profile, as the distance between where the tangent at
+    C = frac * C_inlet meets C = 0 and C = C_inlet: delta = C_inlet / |dC/dx| there."""
+    out = np.full(len(C), np.nan)
+    for k, c in enumerate(C):
+        ref = c[0]
+        i = np.nonzero(c < frac * ref)[0]
+        if i.size == 0 or i[0] == 0:
+            continue
+        j = i[0]
+        slope = abs(np.gradient(c, x)[j - 1:j + 1]).max()
+        if slope > 0:
+            out[k] = ref / slope
+    return out
+
+
 def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="single_pore",
                 tmax=np.inf, log=None, pore=0, num_pores=1, gif=True, mp4=False,
                 spacetime_cmap="hot"):
@@ -79,6 +95,28 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
         ax2.set_ylabel(r"$I_{\rm tot}$", color="C3")
     ax1.set_title("Front position and total current")
     fig.tight_layout(); fig.savefig(pre + "_front_current.png", dpi=160); plt.close(fig)
+
+    # 3b) shock thickness vs t (tangent at the half level: delta = c_ref / |dC/dx|),
+    #     with a t^1/2 fit while the front propagates (up to peak thickness)
+    th = shock_thickness(x, C)
+    speed = np.abs(np.gradient(xs, times))
+    vmax = np.nanmax(speed[1:]) if len(speed) > 1 else 0
+    prop = (times > 0) & ~np.isnan(th) & (speed > 0.05 * vmax)
+    if prop.any():  # stop the fit where the front starts to slow down (thickness peaks)
+        prop &= times <= times[prop][np.nanargmax(th[prop])]
+    a = np.sum(th[prop] * np.sqrt(times[prop])) / np.sum(times[prop]) if prop.sum() > 2 else np.nan
+    pw = np.polyfit(np.log(times[prop]), np.log(th[prop]), 1) if prop.sum() > 2 else [np.nan, np.nan]
+    r2 = 1 - np.sum((th[prop] - a * np.sqrt(times[prop])) ** 2) / np.sum((th[prop] - th[prop].mean()) ** 2)
+    fig, ax = plt.subplots(figsize=(6.0, 4.4))
+    ax.plot(times, th, "b-", lw=1.6, label="Present model")
+    tf = times[prop]
+    ax.plot(tf, a * np.sqrt(tf), "r--", lw=1.6, label=r"$t^{1/2}$ fit")
+    ax.set_xlabel("t"); ax.set_ylabel(r"$\delta$")
+    ax.set_xlim(0, times[-1]); ax.set_ylim(0, None)
+    ax.legend(frameon=False, loc="lower right")
+    fig.tight_layout(); fig.savefig(pre + "_thickness.png", dpi=140); plt.close(fig)
+    print(f"thickness fit: delta = {a:.4g} t^0.5 over t <= {tf[-1] if tf.size else np.nan:.4g}, "
+          f"R^2 = {r2:.3f}; free power-law exponent = {pw[0]:.3f}")
 
     # 4) animated GIF
     if gif or mp4:

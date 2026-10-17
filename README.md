@@ -6,12 +6,19 @@ and pressure) in networks of microscale and nanoscale pores.
 **Single pore**: a charged pore between two reservoirs. Under an applied voltage a deionization shock
 moves into the pore and then stops.
 
-![single pore schematic](docs/figures/single_pore_schematic.png)
+<p>
+  <img src="docs/figures/single_pore_schematic.png" width="49%" alt="single pore schematic">
+  <img src="docs/figures/single_pore_shock.gif" width="49%" alt="single pore shock animation">
+</p>
 
-Concentration C̄(x, t) along the pore (black = depleted); the dashed line is the shock front.
+Left: the pore between two reservoirs. Right: the shock moving into the pore.
 
-![single pore spacetime](docs/figures/single_pore_spacetime.png)
-![single pore](docs/figures/single_pore_shock.gif)
+<p>
+  <img src="docs/figures/single_pore_spacetime.png" width="49%" alt="single pore space-time">
+  <img src="docs/figures/single_pore_thickness.png" width="49%" alt="single pore shock thickness">
+</p>
+
+Left: C̄(x, t), black = depleted, dashed line = shock front. Right: shock thickness grows like t^1/2 until the shock stops.
 
 **H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
 grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.

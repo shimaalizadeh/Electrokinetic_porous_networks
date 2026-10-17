@@ -18,7 +18,8 @@ Same physics as the I_tot = 23.2686 baseline, with frequent snapshots over the f
   (`python -m ekpn_viz.schematic docs/figures/single_pore_schematic.png`)
 - `single_pore_spacetime.png`: C_bar(x, t), x across and t up, black = depleted, dashed line = front
   (C_bar = C_bar_inlet / 2); layout follows Alizadeh, PhD dissertation, Stanford University, 2017
-- `single_pore_profiles.png`: profiles at log-spaced times
+- `single_pore_thickness.png`: shock thickness vs t, where thickness = C_bar_inlet / |dC_bar/dx| at the half
+  level (the tangent there, run from C_bar = 0 to C_bar_inlet), with a t^1/2 fit up to the peak thickness
 - `single_pore_shock.mp4` / `.gif`: the front, animated
 
 ## H-junction (`hjunction_*`)
