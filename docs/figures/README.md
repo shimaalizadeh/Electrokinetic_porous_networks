@@ -40,7 +40,5 @@ by symlinking Tecplot files under one write_every = 50 numbering).
 node 3; V = 20 at node 0, 0 at nodes 1 and 2; dt 1e-4, t 0.05, write_every 5.
 
     ekpn-viz network run --network examples/tjunction/network.toml --dt 1e-4 --write-every 5 --prefix tjunction
-    ekpn-viz path    run --network examples/tjunction/network.toml --dt 1e-4 --write-every 5 --pores 0,2 --prefix tjunction_0-2
 
 - `tjunction_C_bar_map.png`: network coloured by C_bar
-- `tjunction_0-2_C_bar_spacetime.png`: C_bar(x, t) along pores 0 -> 2

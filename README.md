@@ -88,21 +88,26 @@ identical (checked on 5 example networks).
     python3 tools/network_in_to_toml.py OLD/Network.in -p 5 -r 6 --v0 --channels OLD/Channels.in   # older phd_codes format
 
 ## Visualization
+Install the plotting package once (MP4 videos also need `ffmpeg`):
+
     python3 -m venv .venv && . .venv/bin/activate
-    pip install -e .            # numpy, matplotlib, pillow;  pip install -e .[3d] adds pyvista + imageio
-    # MP4 output needs ffmpeg on PATH
+    pip install -e .
 
-    N="--network NET.toml --dt 1e-5 --write-every 50"
-    ekpn-viz network  RUN $N --times 0.002,0.02,0.1,0.75 --shape slit   # network map (line or slit style)
-    ekpn-viz path     RUN $N --pores 0,1 --log-time --mp4              # C_bar(x,t) along a chain of pores
-    ekpn-viz animate  RUN $N --paths "0,1;3,4" --shape slit             # network + paths, MP4 + small GIF
-    ekpn-viz current  RUN $N --log log.txt                              # I_tot(t), per-pore current/flow
-    ekpn-viz export-vtk RUN $N --out vtk/ --every 4                     # .vtp per snapshot + .pvd for ParaView
-    ekpn-viz render3d RUN $N --times 0.02,0.75                          # PyVista tubes, off-screen PNG/MP4
-    ekpn-viz single-pore / hjunction ...                                # fixed figure presets
+Example: run the H-junction, then make its video. From the repo root:
 
-`RUN` is the directory holding the `Tecplot_NNNN.bin` snapshots. Plot layout comes from `x`/`y` on the
-reservoirs, else a spring layout. Exact commands for every figure are in `docs/figures/README.md`.
+    mkdir -p run/input_files && cp examples/hjunction_reference/network.toml run/input_files/
+    ln -s ../tables run/tables
+    cd run && ../build/ek_solver ../examples/hjunction_reference/run.toml > log.txt && cd ..
+
+    ekpn-viz animate run --network run/input_files/network.toml --dt 1e-5 --write-every 50 \
+        --paths "0,1;3,4" --shape slit
+
+The run takes a few minutes and writes snapshots into `run/`. The last command saves an MP4 and a GIF in
+`docs/figures/`: the H-junction coloured by concentration, with concentration along the top channel (pores 0
+and 1) and the bottom channel (pores 3 and 4). `--dt` and `--write-every` must match the run file, so snapshot
+numbers can be turned into times.
+
+Other plots (`network`, `current`, 3D views) are listed in `ekpn-viz --help`.
 
 ## Examples
 | Case | Files | What it shows |
