@@ -11,8 +11,8 @@
       ../build/ek_solver 5 6 5 1e-5 0.03 30 0 tables/ network_fine.toml > log.txt   # ~3.5 min
       cd .. && ekpn-viz hjunction run --network run/input_files/network_fine.toml \
           --dt 1e-5 --write-every 30 --log run/log.txt --out figs
-- `network_recommended.toml`: result of the mesh study (docs/mesh_study.md). It is the fine mesh. With the unchanged
+- `network_recommended.toml`: result of the mesh study. It is the fine mesh. With the unchanged
   solver, stability is not monotonic in mesh refinement, so there is no coarser mesh that runs reliably.
 - Voltage sweep: with potentials scaled to 12% (48 / 38.4) the original mesh runs stably; 13% and above abort
-  (tools/voltage_sweep.py). NOTE: this input is not the published case (V_R = 8 V, 4 nm element); see docs/hjunction_thesis_settings.md and
-  examples/hjunction_thesis/ for the published settings.
+  (tools/voltage_sweep.py). NOTE: this input is not the published case (V_R = 8 V, 4 nm element); see
+  examples/hjunction_reference/ for the published settings.

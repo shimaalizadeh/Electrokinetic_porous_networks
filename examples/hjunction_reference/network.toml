@@ -1,9 +1,9 @@
-# H-junction exactly as in the thesis (Alizadeh 2017, Sec. 4.6, p.72-73) and Langmuir 33, 6220 (2017):
+# H-junction exactly as in the dissertation (Alizadeh 2017, Sec. 4.6, p.72-73) and Langmuir 33, 6220 (2017):
 # Channels 1,2: 6.5 mm (Lref = 6594 um, from hjunct_property.py); Channels 3,4: 8.731 mm; h = 1.4 um, w = 50 um,
 # sigma_m = -13 mC/m^2; element: d_n = 10 nm, sigma_n = -200 mC/m^2, 90 um, porosity 0.4 over 1 um x 50 um;
 # reservoirs 1 mM, P = 0. Potentials nondimensionalised with 40 per volt (scripts on Drive: v = 0,40,...,320 <-> 0..8 V),
 # so V_L = 10 V -> 400, V_R = 4 V -> 160. Constants as in hjunct_property.py (T = 300 K, eps_r = 80).
-# Mesh as in the thesis: 3200 cells per microchannel, 30 for the element; thesis dt = 1e-6.
+# Mesh as published: 3200 cells per microchannel, 30 for the element; published dt = 1e-6.
 
 [defaults]
 sigma_star = -497.359371162   # sigma = -13 mC/m^2, h = 1.4 um slit (hp = h/2)
