@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ekpn-viz"
+version = "0.1.0"
+description = "Readers and plots for Electrokinetic_porous_networks (ek_solver) output"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [{ name = "Shima Alizadeh" }]
+dependencies = [
+  "numpy",
+  "matplotlib",
+  "pillow",
+  "tomli; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+3d = ["pyvista", "imageio"]
+
+[project.scripts]
+ekpn-viz = "ekpn_viz.cli:main"
+
+[tool.setuptools]
+packages = ["ekpn_viz"]

@@ -1,0 +1,78 @@
+# network_schema.toml: annotated reference for the network.toml format.
+# All quantities are NONDIMENSIONAL, same scalings as the legacy Network.in.
+# Select it from a run config with   [io] network_file = "input_files/network.toml"
+# (the extension picks the reader: .toml = this format, anything else = legacy Network.in).
+# Convert old files with   python3 tools/network_in_to_toml.py Network.in -p <pores> -r <reservoirs>
+#
+# Rules checked on load (clear error + exit otherwise):
+#   * number of [[pores]] / [[reservoirs]] equals num_pores / num_reservoirs in the run config
+#   * ids are 0..N-1, each exactly once (entries may appear in any order)
+#   * length > 0, n_cells > 0, type is "slit" or "circular"
+#   * ends are two different valid reservoir ids; every reservoir touches >= 1 pore
+#   * a profile CSV exists, has the exact header, and has n_cells data rows
+#
+# Value lookup: entry field > [defaults] table > built-in default > error.
+#   key                     built-in    note
+#   pore type               "slit"
+#   pore dead_end           false
+#   pore area               1.0         reference cross-section
+#   pore c0                 1.0         reference concentration
+#   reservoir type          "slit"
+#   reservoir c0            1.0
+#   reservoir volume        0.0         end reservoir
+#   reservoir pressure      0.0         ignored anyway (solver forces 0)
+#   reservoir sigma_star,   (none)      inherit from [defaults] if not set on the reservoir
+#             lambda_D
+# REQUIRED (no neutral value; a silent guess would change the physics):
+#   pore: id, ends, length, n_cells, sigma_star, lambda_D (each may come from [defaults]
+#         except id/ends)
+#   reservoir: id, pressure_known, potential_known, potential
+
+# Optional. Any pore key below except id/ends/profile can be set here once and
+# overridden per pore (TOML's answer to YAML anchors). Reservoirs also inherit
+# sigma_star and lambda_D from here.
+[defaults]
+type = "slit"        # built-in "slit". "slit" (slit tables) or "circular" (circle tables)
+dead_end = false     # built-in false. legacy column 2 (Channel_blocked)
+n_cells = 400        # mesh cells inside the pore (reservoir cells are added by the solver)
+sigma_star = -200.0  # nondimensional surface charge sigma*
+lambda_D = 0.017     # Debye length / pore size
+area = 1.0           # built-in 1.0. cross-section area (nondimensional_Sp)
+c0 = 1.0             # built-in 1.0. initial concentration in the pore
+
+[[pores]]
+id = 0               # 0-based pore index
+ends = [0, 1]        # [inlet reservoir, outlet reservoir]. Single source of connectivity:
+                     # the solver sets Connectivity[in][out] = +1, [out][in] = -1, via pore id.
+length = 0.6         # total pore length; dx = length / n_cells
+# profile = "pore0_cells.csv"
+#   Optional per-cell values, path relative to this file. CSV header must be exactly
+#   sigma_star,lambda_D,Sp,C0  with one row per cell (n_cells rows), same order as the
+#   old Channels.in (sigma_star >> lambda >> nondimensional_Sp >> C0). Overrides the
+#   per-pore sigma_star/lambda_D/area/c0 for the interior cells; reservoir cells still
+#   take their values from the reservoirs (as before).
+
+[[reservoirs]]
+id = 0               # 0-based reservoir (node) index
+type = "slit"        # built-in "slit". "slit" or "circular"
+pressure_known = true    # true = fixed (Dirichlet) pressure; false = solved for.
+potential_known = true   # true = fixed electrochemical potential; false = solved for.
+                         # NOTE: legacy Network.in flags are the opposite (0 = known),
+                         # despite what input_files/README.md says. The converter flips them.
+pressure = 0.0       # built-in 0.0; IGNORED: the solver forces reservoir pressure to 0 (legacy behavior)
+potential = 80.0     # electrochemical potential (thermal volts)
+c0 = 1.0             # built-in 1.0. concentration
+sigma_star = -200.0  # reservoir sigma*
+lambda_D = 0.017     # reservoir lambda_D (used for the table lookups)
+# x = 0.0  y = 0.0   # optional plot coordinates for ekpn-viz (ignored by the solver)
+volume = 0.0         # built-in 0.0. 0 for end reservoirs with P and mu both known; > 0 for internal nodes
+
+[[reservoirs]]
+id = 1
+pressure_known = false
+potential_known = true
+potential = 0.0
+c0 = 1.0
+sigma_star = -200.0
+lambda_D = 0.017
+volume = 8.068e-05

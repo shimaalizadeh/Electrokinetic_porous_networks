@@ -1,0 +1,32 @@
+# Single dead-end pore, V = 80, dt = 1e-4: 400 cells is the coarsest stable mesh (350 and below abort).
+# I_tot = 23.2686, -0.23% vs 3200 cells (23.323). Same as network.toml.
+# network.toml converted from Network.in by tools/network_in_to_toml.py
+# Schema and built-in defaults: input_files/network_schema.toml. All quantities nondimensional.
+# Omitted keys use [defaults], then built-ins (pores: slit, not dead-end, area 1, c0 1;
+# reservoirs: slit, c0 1, volume 0, pressure 0).
+
+[[pores]]
+id = 0
+ends = [0, 1]   # [inlet reservoir, outlet reservoir]
+dead_end = true
+length = 0.6
+n_cells = 400
+sigma_star = -200.0
+lambda_D = 0.017
+
+[[reservoirs]]
+id = 0
+pressure_known = true
+potential_known = true
+potential = 80.0
+sigma_star = -200.0
+lambda_D = 0.017
+
+[[reservoirs]]
+id = 1
+pressure_known = false
+potential_known = true
+potential = 0.0
+sigma_star = -200.0
+lambda_D = 0.017
+volume = 8.068e-05

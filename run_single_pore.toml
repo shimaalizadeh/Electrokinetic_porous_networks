@@ -1,0 +1,19 @@
+# run_single_pore.toml: single-pore baseline (expect I_tot = 23.2686)
+# Equivalent to: ./build/ek_solver 1 2 1 1e-4 1 1000000 0 tables/ Network.in
+# Run from the repo root:  ./build/ek_solver run_single_pore.toml
+# Paths are relative to the working directory.
+
+[network]
+num_pores = 1              # total pores in Network.in
+num_reservoirs = 2         # total reservoirs in Network.in
+num_horizontal_pores = 1   # horizontal pores in the lattice
+
+[solver]
+dt = 1.0e-4                # timestep (nondimensional)
+max_time = 1.0             # end time of the simulation
+write_every = 1000000      # write output every N steps
+restart = false            # true = resume from input_files/network_final.in + channels_final.bin
+
+[io]
+tables_dir = "tables/"                    # precomputed coefficient tables
+network_file = "input_files/Network.in"   # .in = legacy reader, .toml = network.toml reader (must be under input_files/)

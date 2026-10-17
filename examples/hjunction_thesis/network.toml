@@ -1,0 +1,94 @@
+# H-junction exactly as in the thesis (Alizadeh 2017, Sec. 4.6, p.72-73) and Langmuir 33, 6220 (2017):
+# Channels 1,2: 6.5 mm (Lref = 6594 um, from hjunct_property.py); Channels 3,4: 8.731 mm; h = 1.4 um, w = 50 um,
+# sigma_m = -13 mC/m^2; element: d_n = 10 nm, sigma_n = -200 mC/m^2, 90 um, porosity 0.4 over 1 um x 50 um;
+# reservoirs 1 mM, P = 0. Potentials nondimensionalised with 40 per volt (scripts on Drive: v = 0,40,...,320 <-> 0..8 V),
+# so V_L = 10 V -> 400, V_R = 4 V -> 160. Constants as in hjunct_property.py (T = 300 K, eps_r = 80).
+# Mesh as in the thesis: 3200 cells per microchannel, 30 for the element; thesis dt = 1e-6.
+
+[defaults]
+sigma_star = -497.359371162   # sigma = -13 mC/m^2, h = 1.4 um slit (hp = h/2)
+lambda_D = 0.0136881910285     # lambda_ref(1 mM) = 9.58 nm / hp
+
+[[pores]]   # Channel 1 (6.594 mm, Lref)
+id = 0
+ends = [0, 1]
+length = 1.0
+n_cells = 3200
+
+[[pores]]   # Channel 2
+id = 1
+ends = [1, 2]
+length = 1.0
+n_cells = 3200
+
+[[pores]]   # cation-selective element: d = 10 nm circular nanopores, sigma = -200 mC/m^2, 90 um long, 40% of 1 um x 50 um
+id = 2
+ends = [1, 4]
+type = "circular"
+length = 0.0136487716106
+n_cells = 30
+sigma_star = -27.3274379759
+lambda_D = 3.83269348798
+area = 0.285714285714
+
+[[pores]]   # Channel 3 (8.731 mm)
+id = 3
+ends = [3, 4]
+length = 1.32408249924
+n_cells = 3200
+
+[[pores]]   # Channel 4
+id = 4
+ends = [4, 5]
+length = 1.32408249924
+n_cells = 3200
+
+[[reservoirs]]   # left end of Channel 1, V_L = 10 V (40 per volt, see header)
+id = 0
+x = 0.0
+y = 0.0
+pressure_known = true
+potential_known = true
+potential = 400.0
+
+[[reservoirs]]   # top internal node; volume = largest adjacent cell (Channel 1 dx)
+id = 1
+x = 1.0
+y = 0.0
+pressure_known = false
+potential_known = false
+potential = 0.0
+volume = 0.0003125
+
+[[reservoirs]]   # right end of Channel 2, V_R = 4 V
+id = 2
+x = 2.0
+y = 0.0
+pressure_known = true
+potential_known = true
+potential = 160.0
+
+[[reservoirs]]
+id = 3
+x = -0.324
+y = -0.42
+pressure_known = true
+potential_known = true
+potential = 0.0
+
+[[reservoirs]]   # bottom internal node; volume = Channel 3 dx
+id = 4
+x = 1.0
+y = -0.42
+pressure_known = false
+potential_known = false
+potential = 0.0
+volume = 0.000413775781013
+
+[[reservoirs]]
+id = 5
+x = 2.324
+y = -0.42
+pressure_known = true
+potential_known = true
+potential = 0.0

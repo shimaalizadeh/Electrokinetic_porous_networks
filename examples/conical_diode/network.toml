@@ -1,0 +1,194 @@
+# network.toml converted from Network.in by tools/network_in_to_toml.py
+# Schema and built-in defaults: input_files/network_schema.toml. All quantities nondimensional.
+# Omitted keys use [defaults], then built-ins (pores: slit, not dead-end, area 1, c0 1;
+# reservoirs: slit, c0 1, volume 0, pressure 0).
+
+[defaults]   # used by any pore that doesn't set the key itself
+type = "circular"
+n_cells = 100
+
+[[pores]]
+id = 0
+ends = [0, 1]   # [inlet reservoir, outlet reservoir]
+length = 0.5
+sigma_star = -54.6549
+lambda_D = 0.0019476
+
+[[pores]]
+id = 1
+ends = [1, 2]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -17.2545
+lambda_D = 0.0690943
+area = 0.000794535
+
+[[pores]]
+id = 2
+ends = [2, 3]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -48.0908
+lambda_D = 0.0247904
+area = 0.00617207
+
+[[pores]]
+id = 3
+ends = [3, 4]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -78.9271
+lambda_D = 0.015105
+area = 0.0166249
+
+[[pores]]
+id = 4
+ends = [4, 5]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -109.763
+lambda_D = 0.0108615
+area = 0.032153
+
+[[pores]]
+id = 5
+ends = [5, 6]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -140.6
+lambda_D = 0.00847933
+area = 0.0527563
+
+[[pores]]
+id = 6
+ends = [6, 7]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -171.436
+lambda_D = 0.00695415
+area = 0.078435
+
+[[pores]]
+id = 7
+ends = [7, 8]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -202.272
+lambda_D = 0.00589399
+area = 0.109189
+
+[[pores]]
+id = 8
+ends = [8, 9]   # [inlet reservoir, outlet reservoir]
+length = 0.125
+sigma_star = -233.109
+lambda_D = 0.00511432
+area = 0.145018
+
+[[pores]]
+id = 9
+ends = [9, 10]   # [inlet reservoir, outlet reservoir]
+length = 0.5
+sigma_star = -54.6549
+lambda_D = 0.0019476
+
+[[reservoirs]]
+id = 0
+type = "circular"
+pressure_known = true
+potential_known = true
+potential = 20.0
+sigma_star = -54.6549
+lambda_D = 0.0019476
+
+[[reservoirs]]
+id = 1
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -54.6549
+lambda_D = 0.0019476
+volume = 9.93169e-07
+
+[[reservoirs]]
+id = 2
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -48.0908
+lambda_D = 0.0247904
+volume = 7.71508e-06
+
+[[reservoirs]]
+id = 3
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -78.9271
+lambda_D = 0.015105
+volume = 2.07811e-05
+
+[[reservoirs]]
+id = 4
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -109.763
+lambda_D = 0.0108615
+volume = 4.01912e-05
+
+[[reservoirs]]
+id = 5
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -140.6
+lambda_D = 0.00847933
+volume = 6.59454e-05
+
+[[reservoirs]]
+id = 6
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -171.436
+lambda_D = 0.00695415
+volume = 9.80438e-05
+
+[[reservoirs]]
+id = 7
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -202.272
+lambda_D = 0.00589399
+volume = 0.000136486
+
+[[reservoirs]]
+id = 8
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -233.109
+lambda_D = 0.00511432
+volume = 0.000181273
+
+[[reservoirs]]
+id = 9
+type = "circular"
+pressure_known = false
+potential_known = false
+potential = 0.0
+sigma_star = -54.6549
+lambda_D = 0.0019476
+volume = 0.000181273
+
+[[reservoirs]]
+id = 10
+type = "circular"
+pressure_known = true
+potential_known = true
+potential = 0.0
+sigma_star = -54.6549
+lambda_D = 0.0019476

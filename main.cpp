@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string>
 #include "network_solver.hpp"
+#include "config.hpp"
 using namespace std;
 
 
@@ -16,34 +17,38 @@ int main(int argc, char *argv[]){
     //////////////////////////Initialize MPI///////////////////////
     int myid=0;
   
-    // get arguments
-    if(argc != 10){
-	cerr<<"ERROR: 9 arguments required: \n"<<
-    "# of pores, \n"<<
-    "# of reservoirs, \n"<<
-    "total # of horizontal pores, \n"<<
-    "delta_t, \n"<<
-    "max_time, \n"<<
-    "write_frequency, \n"<<
-    "restart(0 or 1)"<<
-    "table_path\n"<<
-    "network_input_file\n"<<endl;
+    // load run settings: either a TOML file or the legacy 9 positional args
+    if(argc != 2 && argc != 10){
+	cerr<<"Usage:\n"<<
+    "  ek_solver run.toml\n"<<
+    "  ek_solver <# pores> <# reservoirs> <# horizontal pores> <delta_t> <max_time>\n"<<
+    "            <write_frequency> <restart 0|1> <table_path> <network_input_file>\n"<<endl;
+        exit(EXIT_FAILURE);
+    }
+
+    Config cfg;
+    string network_input_file;
+    string table_path;
+    try{
+        cfg = (argc == 2) ? load_config_toml(argv[1]) : load_config_args(argc, argv);
+        validate_config(cfg);
+        network_input_file = cfg.network_name_for_setup();
+        table_path = cfg.tables_prefix();
+    }catch(const std::exception& e){
+        cerr<<"ERROR: "<<e.what()<<endl;
         exit(EXIT_FAILURE);
     }
 
     // some default values
     double current_time = 0.;
 
-    // get arguments
-    int num_pores = atoi(argv[1]);
-    int num_reservoirs = atoi(argv[2]);
-    int h_pores = atoi(argv[3]);
-    double dt = atof(argv[4]);
-    double tmax = atof(argv[5]);
-    int period = atoi(argv[6]);
-    int restart = atoi(argv[7]);
-    string table_path = argv[8];
-    string network_input_file = argv[9];
+    int num_pores = cfg.num_pores;
+    int num_reservoirs = cfg.num_reservoirs;
+    int h_pores = cfg.num_horizontal_pores;
+    double dt = cfg.dt;
+    double tmax = cfg.max_time;
+    int period = cfg.write_every;
+    int restart = cfg.restart ? 1 : 0;
     
     //setup the solver
     NetworkSolver network_solver(myid, 
