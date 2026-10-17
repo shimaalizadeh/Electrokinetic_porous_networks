@@ -12,7 +12,10 @@ Same physics as the I_tot = 23.2686 baseline, with frequent snapshots over the f
     mkdir -p run/input_files && cp input_files/Network.in run/input_files/ && ln -s ../tables run/tables
     cd run && ../build/ek_solver 1 2 1 1e-4 0.05 2 0 tables/ Network.in > log.txt && cd ..
     ekpn-viz single-pore run --network run/input_files/Network.in --dt 1e-4 --write-every 2 \
-        --log run/log.txt --out docs/figures --mp4
+        --log run/log.txt --out docs/figures --mp4 --stop-at-stall
+
+`--stop-at-stall` ends all single-pore figures and the video when the front first comes within 1% of the pore
+length of its final position (here x = 0.055 at t = 0.032); the stalled period after that is left out.
 
 - `single_pore_schematic.png`: drawing of a charged pore between two reservoirs
   (`python -m ekpn_viz.schematic docs/figures/single_pore_schematic.png`)

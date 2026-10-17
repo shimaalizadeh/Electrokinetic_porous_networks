@@ -40,7 +40,7 @@ def shock_thickness(x, C, frac=0.5):
 
 def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="single_pore",
                 tmax=np.inf, log=None, pore=0, num_pores=1, gif=True, mp4=False,
-                spacetime_cmap="hot"):
+                spacetime_cmap="hot", stop_at_stall=False):
     """Space-time map, profiles, front/current plot and GIF for one pore. Returns summary dict."""
     plt, animation = _mpl()
     times, frames = read_snapshots(run_dir, dt, write_every)
@@ -51,6 +51,13 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
     L, ns = pore["length"], C.shape[1]
     x = (np.arange(ns) + 0.5) / ns * L
     xs = np.array([front_position(x, c) for c in C])
+    if stop_at_stall:
+        # end when the front first comes within 1% of the pore length of its final position
+        near = np.nonzero(np.abs(xs - xs[-1]) <= 0.01 * L)[0]
+        if near.size:
+            n = near[0] + 1
+            times, C, xs = times[:n], C[:n], xs[:n]
+            print(f"stop_at_stall: front stalls at x = {xs[-1]:.4f}, plots end at t = {times[-1]:.4g}")
     os.makedirs(out, exist_ok=True)
     pre = os.path.join(out, prefix)
     cmap = "viridis"
