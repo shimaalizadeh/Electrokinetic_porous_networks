@@ -22,8 +22,25 @@ def front_position(x, c, frac=0.5):
     return x[below[0]] if below.size else np.nan
 
 
+def shock_thickness(x, C, frac=0.5):
+    """Shock thickness per profile, as the distance between where the tangent at
+    C = frac * C_inlet meets C = 0 and C = C_inlet: delta = C_inlet / |dC/dx| there."""
+    out = np.full(len(C), np.nan)
+    for k, c in enumerate(C):
+        ref = c[0]
+        i = np.nonzero(c < frac * ref)[0]
+        if i.size == 0 or i[0] == 0:
+            continue
+        j = i[0]
+        slope = abs(np.gradient(c, x)[j - 1:j + 1]).max()
+        if slope > 0:
+            out[k] = ref / slope
+    return out
+
+
 def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="single_pore",
-                tmax=np.inf, log=None, pore=0, num_pores=1, gif=True, mp4=False):
+                tmax=np.inf, log=None, pore=0, num_pores=1, gif=True, mp4=False,
+                spacetime_cmap="hot", stop_at_stall=False):
     """Space-time map, profiles, front/current plot and GIF for one pore. Returns summary dict."""
     plt, animation = _mpl()
     times, frames = read_snapshots(run_dir, dt, write_every)
@@ -34,21 +51,32 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
     L, ns = pore["length"], C.shape[1]
     x = (np.arange(ns) + 0.5) / ns * L
     xs = np.array([front_position(x, c) for c in C])
+    if stop_at_stall:
+        # end when the front first comes within 1% of the pore length of its final position
+        near = np.nonzero(np.abs(xs - xs[-1]) <= 0.01 * L)[0]
+        if near.size:
+            n = near[0] + 1
+            times, C, xs = times[:n], C[:n], xs[:n]
+            print(f"stop_at_stall: front stalls at x = {xs[-1]:.4f}, plots end at t = {times[-1]:.4g}")
     os.makedirs(out, exist_ok=True)
     pre = os.path.join(out, prefix)
     cmap = "viridis"
     tl = "t (nondimensional)"
 
-    # 1) space-time map
-    fig, ax = plt.subplots(figsize=(7.5, 4.6))
-    m = ax.pcolormesh(x, times, C, shading="auto", cmap=cmap, vmin=0, vmax=C.max())
-    ax.plot(xs, times, "w--", lw=1.4, label=r"shock front ($\bar C = \frac{1}{2}\bar C_{\rm inlet}$)")
-    ax.set_xlabel("x along pore (inlet at 0, dead-end reservoir at L)")
-    ax.set_ylabel(tl)
-    ax.set_title(r"Deionization shock in a single nanopore: $\bar C(x,t)$")
-    fig.colorbar(m, ax=ax, label=r"$\bar C$")
-    ax.legend(loc="upper right", fontsize=9, framealpha=0.3)
-    fig.tight_layout(); fig.savefig(pre + "_spacetime.png", dpi=160); plt.close(fig)
+    # 1) space-time map: x across, t up (linear), black = depleted, white/yellow = bulk,
+    #    dashed line = shock front. Same layout as the space-time figure in
+    #    Alizadeh, PhD dissertation, Stanford University, 2017 (Fig. 4.2b).
+    fig, ax = plt.subplots(figsize=(6.0, 4.4))
+    m = ax.pcolormesh(x, times, C, shading="auto", cmap=spacetime_cmap, vmin=0,
+                      vmax=max(1.0, C.max()), rasterized=True)
+    ax.plot(xs, times, "k--", lw=1.2)
+    ax.set_xlim(0, L); ax.set_ylim(0, times[-1])
+    ax.set_xlabel("x"); ax.set_ylabel("t")
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(True)
+    cb = fig.colorbar(m, ax=ax, pad=0.03)
+    cb.ax.set_title(r"$\bar C$", fontsize=12)
+    fig.tight_layout(); fig.savefig(pre + "_spacetime.png", dpi=140); plt.close(fig)
 
     # 2) waterfall of profiles
     fig, ax = plt.subplots(figsize=(7.5, 4.6))
@@ -74,6 +102,29 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
         ax2.set_ylabel(r"$I_{\rm tot}$", color="C3")
     ax1.set_title("Front position and total current")
     fig.tight_layout(); fig.savefig(pre + "_front_current.png", dpi=160); plt.close(fig)
+
+    # 3b) shock thickness vs t (tangent at the half level: delta = c_ref / |dC/dx|),
+    #     with a t^1/2 fit while the front propagates (up to peak thickness)
+    th = shock_thickness(x, C)
+    speed = np.abs(np.gradient(xs, times))
+    vmax = np.nanmax(speed[1:]) if len(speed) > 1 else 0
+    prop = (times > 0) & ~np.isnan(th) & (speed > 0.05 * vmax)
+    if prop.any():  # stop the fit where the front starts to slow down (thickness peaks)
+        prop &= times <= times[prop][np.nanargmax(th[prop])]
+    a = np.sum(th[prop] * np.sqrt(times[prop])) / np.sum(times[prop]) if prop.sum() > 2 else np.nan
+    pw = np.polyfit(np.log(times[prop]), np.log(th[prop]), 1) if prop.sum() > 2 else [np.nan, np.nan]
+    r2 = 1 - np.sum((th[prop] - a * np.sqrt(times[prop])) ** 2) / np.sum((th[prop] - th[prop].mean()) ** 2)
+    fig, ax = plt.subplots(figsize=(6.0, 4.4))
+    tf = times[prop]
+    kend = (np.nonzero(times <= tf[-1])[0][-1] + 1) if tf.size else len(times)  # stop at peak thickness
+    ax.plot(times[:kend], th[:kend], "b-", lw=1.6, label="Present model")
+    ax.plot(tf, a * np.sqrt(tf), "r--", lw=1.6, label=r"$t^{1/2}$ fit")
+    ax.set_xlabel("t"); ax.set_ylabel(r"$\delta$")
+    ax.set_xlim(0, 1.03 * times[kend - 1]); ax.set_ylim(0, None)
+    ax.legend(frameon=False, loc="lower right")
+    fig.tight_layout(); fig.savefig(pre + "_thickness.png", dpi=140); plt.close(fig)
+    print(f"thickness fit: delta = {a:.4g} t^0.5 over t <= {tf[-1] if tf.size else np.nan:.4g}, "
+          f"R^2 = {r2:.3f}; free power-law exponent = {pw[0]:.3f}")
 
     # 4) animated GIF
     if gif or mp4:

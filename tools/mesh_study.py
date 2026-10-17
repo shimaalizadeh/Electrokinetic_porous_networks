@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Mesh-refinement study with the unchanged (central) solver: finds the coarsest stable
-n_cells per pore for the phd_codes H-junction, the T-junction at V=80 and the single pore.
+n_cells per pore for the reference H-junction, the T-junction at V=80 and the single pore.
 
     python3 tools/mesh_study.py --work /tmp/mesh CASE:LABEL ...   (see CASES below)
 Stable = runs to max_time without "Modeling Failed" and final I_tot within 0.5% of the finest mesh.
@@ -36,7 +36,7 @@ def hj(f, bridge=10):
 
 
 CASES = {
-    "hj": dict(src="examples/hjunction_phd_codes/network.toml", sub=None, np=5, nr=6, nh=5, tmax=0.03),
+    "hj": dict(src="examples/hjunction_reference/network.toml", sub=None, np=5, nr=6, nh=5, tmax=0.03),
     "tj": dict(src="examples/tjunction/network.toml", sub=("potential = 20.0", "potential = 80.0"),
                np=3, nr=4, nh=3, tmax=0.05),
     "sp": dict(src="examples/single_pore/network.toml", sub=None, np=1, nr=2, nh=1, tmax=0.1),

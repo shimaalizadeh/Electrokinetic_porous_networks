@@ -86,6 +86,8 @@ def main(argv=None):
     s = sub.add_parser("single-pore", help="preset: figures in docs/figures/single_pore_*")
     common(s, "single_pore", field=False)
     s.add_argument("--pore", type=int, default=0)
+    s.add_argument("--stop-at-stall", action="store_true",
+                   help="end all plots when the front reaches its final position (within 1%% of L)")
     s.add_argument("--no-gif", action="store_true")
     s.add_argument("--mp4", action="store_true", help="also write an MP4 (needs ffmpeg)")
     s = sub.add_parser("hjunction", help="preset: figures in docs/figures/hjunction_*")
@@ -100,7 +102,7 @@ def main(argv=None):
     if a.cmd == "single-pore":
         presets.single_pore(a.run_dir, a.network, a.dt, a.write_every, out=a.out, prefix=a.prefix,
                             tmax=a.tmax, log=a.log, pore=a.pore, num_pores=a.num_pores or 1,
-                            gif=not a.no_gif, mp4=a.mp4)
+                            gif=not a.no_gif, mp4=a.mp4, stop_at_stall=a.stop_at_stall)
         return
     if a.cmd == "hjunction":
         presets.hjunction(a.run_dir, a.network, a.dt, a.write_every, out=a.out, prefix=a.prefix,

@@ -12,10 +12,17 @@ Same physics as the I_tot = 23.2686 baseline, with frequent snapshots over the f
     mkdir -p run/input_files && cp input_files/Network.in run/input_files/ && ln -s ../tables run/tables
     cd run && ../build/ek_solver 1 2 1 1e-4 0.05 2 0 tables/ Network.in > log.txt && cd ..
     ekpn-viz single-pore run --network run/input_files/Network.in --dt 1e-4 --write-every 2 \
-        --log run/log.txt --out docs/figures --mp4
+        --log run/log.txt --out docs/figures --mp4 --stop-at-stall
 
-- `single_pore_spacetime.png`: C_bar(x, t) with the front (C_bar = C_bar_inlet / 2)
-- `single_pore_profiles.png`: profiles at log-spaced times
+`--stop-at-stall` ends the single-pore space-time plot and the video when the front first comes within 1% of the pore
+length of its final position (here x = 0.055 at t = 0.032); the stalled period after that is left out.
+
+- `single_pore_schematic.png`: drawing of a charged pore between two reservoirs
+  (`python -m ekpn_viz.schematic docs/figures/single_pore_schematic.png`)
+- `single_pore_spacetime.png`: C_bar(x, t), x across and t up, black = depleted, dashed line = front
+  (C_bar = C_bar_inlet / 2); layout follows Alizadeh, PhD dissertation, Stanford University, 2017
+- `single_pore_thickness.png`: shock thickness vs t, where thickness = C_bar_inlet / |dC_bar/dx| at the half
+  level (the tangent there, run from C_bar = 0 to C_bar_inlet), with a t^1/2 fit; curve and fit both end at the peak thickness (t = 0.0206)
 - `single_pore_shock.mp4` / `.gif`: the front, animated
 
 ## H-junction (`hjunction_*`)
@@ -24,15 +31,10 @@ bottom channel grounded. Snapshots every 50 steps to t = 0.03 plus every 1000 st
 by symlinking Tecplot files under one write_every = 50 numbering).
 
     R=run; N=examples/hjunction_reference/network.toml; C="--network $N --dt 1e-5 --write-every 50 --log $R/log.txt"
-    ekpn-viz network $R $C --prefix hjunction --times 0.002,0.02,0.1,0.75 --shape slit \
-        --title "H-junction: C̄ in the slit channels (channel lengths to scale, bridge not)"
     ekpn-viz animate $R $C --prefix hjunction_slit --paths "0,1;3,4" --shape slit --title "H-junction, slit channels"
     ekpn-viz render3d $R --network $N --dt 1e-5 --write-every 50 --times 0.75 --prefix hjunction_3d
 
-- `hjunction_C_bar_slit.png`: the network drawn as flat slit channels (oblique view, like the schematic in the
-  top-level README) coloured by C_bar at four times; channel lengths to scale (bottom 1.32x top), the 90 um bridge
-  drawn short but not to scale and inset at the channel edges; slit width ~ area
-- `hjunction_slit_C_bar.mp4` / `.gif`: the same, animated, with C_bar along both channels
+- `hjunction_slit_C_bar.mp4` / `.gif`: the network drawn as slit channels coloured by C_bar (channel lengths to scale, bridge drawn short), animated, with C_bar along both channels
 - `hjunction_3d_C_bar_t0.75.png`: render3d (PyVista tubes, log colour scale) at t = 0.75
 
 ## T-junction (`tjunction_*`)

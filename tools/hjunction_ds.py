@@ -41,7 +41,7 @@ def main():
         fig, ax = plt.subplots(figsize=(7.5, 4.2))
         ax.plot(r[:, 0], r[:, 1], "k-", lw=2, label="shock 1 (Channel 1), this solver")
         if a.ref_um:
-            ax.axhline(a.ref_um, color="C3", ls="--", label=f"thesis value {a.ref_um:g} um")
+            ax.axhline(a.ref_um, color="C3", ls="--", label=f"reference value {a.ref_um:g} um")
         ax.set_xscale("log"); ax.set_xlabel("t (nondimensional)"); ax.set_ylabel("$d_s$ from junction (um)")
         ax.set_title("Deionization shock distance from the cation-selective element", fontsize=10)
         ax.legend(frameon=False); fig.tight_layout(); fig.savefig(a.png, dpi=160)

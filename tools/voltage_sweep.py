@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scale the driving potentials of the phd_codes H-junction (400 and 320) by factors and run the unchanged
+"""Scale the driving potentials of the reference H-junction (400 and 160) by factors and run the unchanged
 solver on a given mesh; prints one JSON line per run (see tools/mesh_study.py for the fields).
 
     python3 tools/voltage_sweep.py --work /tmp/vsweep --mesh f1|orig|f8 --factors 1,0.5,0.25 [--dt 1e-5] [--tmax 0.03]
@@ -21,16 +21,16 @@ def main():
 
     def one(f):
         name = f"hjV{f:g}"
-        ms.CASES[name] = dict(src="examples/hjunction_phd_codes/network.toml",
+        ms.CASES[name] = dict(src="examples/hjunction_reference/network.toml",
                               sub=None, np=5, nr=6, nh=5, tmax=a.tmax)
         src = open(os.path.join(ms.ROOT, ms.CASES[name]["src"])).read()
         txt = src.replace("potential = 400.0", f"potential = {400*f:.6g}").replace(
-            "potential = 320.0", f"potential = {320*f:.6g}")
+            "potential = 160.0", f"potential = {160*f:.6g}")
         p = os.path.join(a.work, f"{name}_{a.mesh}.toml"); os.makedirs(a.work, exist_ok=True)
         open(p, "w").write(txt)
         ms.CASES[name]["src"] = p
         row = ms.run(a.work, name, a.mesh, cells, a.dt)
-        row["factor"] = f; row["V_L"] = 400 * f; row["V_R"] = 320 * f
+        row["factor"] = f; row["V_L"] = 400 * f; row["V_R"] = 160 * f
         return row
     with ThreadPoolExecutor(a.jobs) as ex:
         for row in ex.map(one, [float(x) for x in a.factors.split(",")]):
