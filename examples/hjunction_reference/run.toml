@@ -1,0 +1,16 @@
+# H-junction run. Start it from a fresh folder next to the repo root:
+#   (see examples/hjunction_reference/README.md)
+[network]
+num_pores = 5
+num_reservoirs = 6
+num_horizontal_pores = 5
+
+[solver]
+dt = 1.0e-5
+max_time = 0.1
+write_every = 50
+restart = false
+
+[io]
+tables_dir = "tables/"
+network_file = "input_files/network.toml"

@@ -2,7 +2,6 @@
 
 Generic commands (work for any network):
   ekpn-viz network RUN_DIR ...  schematic coloured by a field at chosen times
-  ekpn-viz path    RUN_DIR ... --pores 0,2,1   field along a chain of pores (+ fronts, GIF/MP4)
   ekpn-viz export-vtk RUN_DIR ...  .vtp per snapshot + .pvd (ParaView / Blender import)
   ekpn-viz render3d   RUN_DIR ...  tubes coloured by C_bar, off-screen MP4 + PNG (pyvista)
   ekpn-viz animate RUN_DIR ... --paths "0,1;3,4"  network schematic + paths, MP4 and small GIF
@@ -57,13 +56,6 @@ def main(argv=None):
     s.add_argument("--title")
     s.add_argument("--layout", help="CSV node,x,y or 'spring' (default: x/y in network.toml, "
                                     "Network.in geometry rows, else spring layout)")
-    s = sub.add_parser("path", help="field along a chain of pores")
-    common(s, "path")
-    s.add_argument("--pores", type=_ints, required=True, help="e.g. 0,2,1 (must share nodes in order)")
-    s.add_argument("--threshold", type=float, help="front level (default: half the initial C_bar)")
-    s.add_argument("--no-gif", action="store_true")
-    s.add_argument("--mp4", action="store_true", help="also write an MP4 (needs ffmpeg)")
-    s.add_argument("--log-time", action="store_true", help="log time axis in the space-time map and front plot")
     s = sub.add_parser("pores", help="space-time map of every pore")
     common(s, "pores")
     s.add_argument("--pores", type=_ints, help="subset (default: all)")
@@ -118,10 +110,6 @@ def main(argv=None):
     run = Run(a.run_dir, a.network, a.dt, a.write_every, a.tmax, a.num_pores, a.num_reservoirs, a.log)
     if a.cmd == "network":
         print(plots.network_map(run, a.field, a.times, a.out, a.prefix, a.layout, shape=a.shape, title=a.title))
-    elif a.cmd == "path":
-        r = plots.path_plots(run, a.pores, a.field, a.threshold, a.out, a.prefix, gif=not a.no_gif, mp4=a.mp4,
-                             log_time=a.log_time)
-        print(f"path nodes {r['nodes']}, length {r['x'][-1]:.4g}, {len(r['fronts'])} front points")
     elif a.cmd == "pores":
         print(plots.pores_grid(run, a.field, a.out, a.prefix, a.pores))
     elif a.cmd == "flow":
