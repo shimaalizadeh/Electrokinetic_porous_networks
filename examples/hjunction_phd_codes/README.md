@@ -15,4 +15,4 @@
   solver, stability is not monotonic in mesh refinement, so there is no coarser mesh that runs reliably.
 - Voltage sweep: with potentials scaled to 12% (48 / 38.4) the original mesh runs stably; 13% and above abort
   (tools/voltage_sweep.py). NOTE: this input is not the published case (V_R = 8 V, 4 nm element); see docs/hjunction_thesis_settings.md and
-  examples/hjunction_thesis/ for the published settings.
+  examples/hjunction_reference/ for the published settings.

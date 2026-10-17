@@ -7,7 +7,7 @@ Each pore is a 1D channel whose cross-section physics (electric double layer, su
 shape) is precomputed into look-up tables (`tables/`). The network couples these 1D pores through reservoirs
 (nodes) that conserve ions, charge and fluid. This makes it possible to simulate phenomena such as concentration
 polarization and deionization shocks, which need fine resolution along the pores, on networks that would be far
-too expensive to resolve fully in 2D/3D. The model and its validation are described in the thesis and papers
+too expensive to resolve fully in 2D/3D. The model and its validation are described in the publications
 listed under [Citation](#citation).
 
 ![Network schematic](toy_problem.png)
@@ -109,7 +109,7 @@ reservoirs, else a spring layout. Exact commands for every figure are in `docs/f
 |---|---|---|
 | Single pore | `input_files/network.toml`, `examples/single_pore/` | deionization shock in a charged slit; I_tot = 23.2686 baseline |
 | T-junction | `examples/tjunction/` | three pores meeting at an internal node |
-| H-junction (thesis) | `examples/hjunction_thesis/` | two microchannels joined by a nanochannel: depletion shock and enrichment |
+| H-junction | `examples/hjunction_reference/` | two microchannels joined by a nanochannel: depletion shock and enrichment |
 | H-junction (phd_codes input) | `examples/hjunction_phd_codes/` | the converted original input; needs the fine mesh to be stable |
 | Others | `examples/toy6_loop`, `circular_pore`, `conical_diode`, `hjunction` | flow loop, circular pore, conical pore |
 
@@ -118,15 +118,11 @@ reservoirs, else a spring layout. Exact commands for every figure are in `docs/f
 ![single pore](docs/figures/single_pore_shock.gif)
 ![single pore spacetime](docs/figures/single_pore_spacetime.png)
 
-**H-junction, thesis settings** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A
-depletion shock grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
-This reproduces the thesis results *qualitatively*: the computed shock distance is ~94-104 um vs 156.6 um in the
-thesis (details: `docs/hjunction_thesis_settings.md`).
+**H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
+grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
 
-![H-junction slit animation](docs/figures/hjunction_thesis_slit_C_bar.gif)
-![H-junction slit map](docs/figures/hjunction_thesis_C_bar_slit.png)
-![top channel](docs/figures/hjunction_thesis_top_C_bar_spacetime.png)
-![shock distance](docs/figures/hjunction_thesis_shock_distance.png)
+![H-junction slit animation](docs/figures/hjunction_slit_C_bar.gif)
+![H-junction slit map](docs/figures/hjunction_C_bar_slit.png)
 
 MP4 versions: `docs/figures/*.mp4`.
 
@@ -142,7 +138,7 @@ This is research code, being tidied for reuse. Known limitations and plans:
 ## Citation
 If you use this code, please cite:
 - S. Alizadeh, *Nonlinear Electrokinetic Transport in Microscale and Nanoscale Porous Structures*,
-  PhD thesis, Stanford University, 2017.
+  PhD dissertation, Stanford University, 2017.
 - S. Alizadeh, A. Mani, "Multiscale Model for Electrokinetic Transport in Networks of Pores, Part I: Model
   Derivation", *Langmuir* 33(25), 6205-6219 (2017). doi:10.1021/acs.langmuir.6b03816
 - S. Alizadeh, A. Mani, "Multiscale Model for Electrokinetic Transport in Networks of Pores, Part II: Computational

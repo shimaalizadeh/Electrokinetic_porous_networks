@@ -27,7 +27,7 @@
 - ArtDiff.dat in phd_codes is an empty output file.
 
 ## 3. Runs with the unchanged solver (central)
-Thesis settings (examples/hjunction_thesis/network.toml) RUN STABLY:
+Thesis settings (examples/hjunction_reference/network.toml) RUN STABLY:
 | mesh | dt | t reached | d_s (Lref 6594 um) | I_tot (last) |
 |---|---|---|---|---|
 | 3200/3200/30/3200/3200 | 1e-5 | 0.38 (still running) | 99.9 um, steady since t~0.3 | 400.5 |
