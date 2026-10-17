@@ -14,7 +14,10 @@ Same physics as the I_tot = 23.2686 baseline, with frequent snapshots over the f
     ekpn-viz single-pore run --network run/input_files/Network.in --dt 1e-4 --write-every 2 \
         --log run/log.txt --out docs/figures --mp4
 
-- `single_pore_spacetime.png`: C_bar(x, t) with the front (C_bar = C_bar_inlet / 2)
+- `single_pore_schematic.png`: drawing of a charged pore between two reservoirs
+  (`python -m ekpn_viz.schematic docs/figures/single_pore_schematic.png`)
+- `single_pore_spacetime.png`: C_bar(x, t), x across and t up, black = depleted, dashed line = front
+  (C_bar = C_bar_inlet / 2); layout follows Alizadeh, PhD dissertation, Stanford University, 2017
 - `single_pore_profiles.png`: profiles at log-spaced times
 - `single_pore_shock.mp4` / `.gif`: the front, animated
 

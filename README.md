@@ -118,10 +118,15 @@ Other plots (`network`, `current`, 3D views) are listed in `ekpn-viz --help`.
 | H-junction (phd_codes input) | `examples/hjunction_phd_codes/` | the converted original input; needs the fine mesh to be stable |
 | Others | `examples/toy6_loop`, `circular_pore`, `conical_diode`, `hjunction` | flow loop, circular pore, conical pore |
 
-**Single pore**: the shock front moves into the pore and then stops.
+**Single pore**: a charged pore between two reservoirs. Under an applied voltage a deionization shock
+moves into the pore and then stops.
 
-![single pore](docs/figures/single_pore_shock.gif)
+![single pore schematic](docs/figures/single_pore_schematic.png)
+
+Concentration C̄(x, t) along the pore (black = depleted); the dashed line is the shock front.
+
 ![single pore spacetime](docs/figures/single_pore_spacetime.png)
+![single pore](docs/figures/single_pore_shock.gif)
 
 **H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
 grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.

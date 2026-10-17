@@ -23,7 +23,8 @@ def front_position(x, c, frac=0.5):
 
 
 def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="single_pore",
-                tmax=np.inf, log=None, pore=0, num_pores=1, gif=True, mp4=False):
+                tmax=np.inf, log=None, pore=0, num_pores=1, gif=True, mp4=False,
+                spacetime_cmap="hot"):
     """Space-time map, profiles, front/current plot and GIF for one pore. Returns summary dict."""
     plt, animation = _mpl()
     times, frames = read_snapshots(run_dir, dt, write_every)
@@ -39,16 +40,20 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
     cmap = "viridis"
     tl = "t (nondimensional)"
 
-    # 1) space-time map
-    fig, ax = plt.subplots(figsize=(7.5, 4.6))
-    m = ax.pcolormesh(x, times, C, shading="auto", cmap=cmap, vmin=0, vmax=C.max())
-    ax.plot(xs, times, "w--", lw=1.4, label=r"shock front ($\bar C = \frac{1}{2}\bar C_{\rm inlet}$)")
-    ax.set_xlabel("x along pore (inlet at 0, dead-end reservoir at L)")
-    ax.set_ylabel(tl)
-    ax.set_title(r"Deionization shock in a single nanopore: $\bar C(x,t)$")
-    fig.colorbar(m, ax=ax, label=r"$\bar C$")
-    ax.legend(loc="upper right", fontsize=9, framealpha=0.3)
-    fig.tight_layout(); fig.savefig(pre + "_spacetime.png", dpi=160); plt.close(fig)
+    # 1) space-time map: x across, t up (linear), black = depleted, white/yellow = bulk,
+    #    dashed line = shock front. Same layout as the space-time figure in
+    #    Alizadeh, PhD dissertation, Stanford University, 2017 (Fig. 4.2b).
+    fig, ax = plt.subplots(figsize=(6.0, 4.4))
+    m = ax.pcolormesh(x, times, C, shading="auto", cmap=spacetime_cmap, vmin=0,
+                      vmax=max(1.0, C.max()), rasterized=True)
+    ax.plot(xs, times, "k--", lw=1.2)
+    ax.set_xlim(0, L); ax.set_ylim(0, times[-1])
+    ax.set_xlabel("x"); ax.set_ylabel("t")
+    for sp in ("top", "right"):
+        ax.spines[sp].set_visible(True)
+    cb = fig.colorbar(m, ax=ax, pad=0.03)
+    cb.ax.set_title(r"$\bar C$", fontsize=12)
+    fig.tight_layout(); fig.savefig(pre + "_spacetime.png", dpi=140); plt.close(fig)
 
     # 2) waterfall of profiles
     fig, ax = plt.subplots(figsize=(7.5, 4.6))
