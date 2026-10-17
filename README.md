@@ -35,8 +35,6 @@ polarization and deionization shocks, which need fine resolution along the pores
 too expensive to resolve fully in 2D/3D. The model and its validation are described in the publications
 listed under [Citation](#citation).
 
-![Network schematic](toy_problem.png)
-
 ## Features
 - Any network topology of slit and circular pores and reservoirs; surface charge, Debye length, area and
   initial concentration can be set per pore or per cell.
