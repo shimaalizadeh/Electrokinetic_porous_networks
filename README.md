@@ -27,6 +27,44 @@ grows in the top channel next to the nanochannel and an enriched zone forms in t
 
 MP4 versions: `docs/figures/*.mp4`.
 
+### Large-scale heterogeneous networks
+The small, structured networks above, representative of lab-on-a-chip devices, are only one use of this code.
+The same solver handles much larger heterogeneous porous media with thousands of pores, where pore sizes are
+sampled from a log-normal distribution and some pores are randomly blocked.
+
+<p>
+  <img src="docs/figures/hierarchical_lattice.gif" width="49%" alt="hierarchical lattice animation">
+  <img src="docs/figures/lattice_iv_vs_homogenized.png" width="49%" alt="I-V of lattice vs homogenized model">
+</p>
+
+Left: evolution of the concentration field in a hierarchical lattice, where wide main channels branch into
+progressively finer micro- and nanoscale pores. Each pore is solved with the same reduced-order 1D model and
+implicit conservative scheme used in the examples above. Right: current-voltage characteristics of the lattice
+medium (solid red), the equivalent homogenized model (solid blue), and the diffusion-limiting current (dashed black).
+
+**Why the network matters.** The homogenized model is a bundle of identical, decoupled parallel pores with the
+same effective pore size and surface conduction as the lattice. Because its pores cannot exchange fluid, its
+only route above the limiting current is surface conduction, which is weak here, so its current barely rises
+above the limit. In the lattice, pores of different sizes are connected, and the competition between
+electroosmotic flow and backward pressure-driven flow creates internal flow loops even though the net flow
+across the medium is zero. Beyond about V/V<sub>T</sub> = 20 these loops become advection-dominated (Péclet
+number above 1), they carry salt toward the membrane, and the overlimiting conductance rises sharply. At
+V/V<sub>T</sub> = 60 the lattice carries nearly three times the current of the homogenized model. Running the
+same lattice with the flow turned off confirms that the difference comes from this induced advection. An
+averaged model built from decoupled pores misses this behavior, and capturing it is the reason to resolve the
+full network.
+
+<p>
+  <img src="docs/figures/random_lattice_C_bar.jpg" width="60%" alt="random nonhierarchical lattice">
+</p>
+
+A nonhierarchical random lattice with about 1,000 open pores between a 50 mM reservoir (top) and a
+cation-selective membrane (bottom) under an applied field, coloured by concentration.
+
+These large-scale results appear in my third paper and my PhD thesis. The network-generation code is not
+included here for now. If you're interested in running these simulations, please email me; my contact
+information is on my [GitHub profile](https://github.com/shimaalizadeh).
+
 ## About the model
 Each pore is a 1D channel whose cross-section physics (electric double layer, surface charge, slit or circular
 shape) is precomputed into look-up tables (`tables/`). The network couples these 1D pores through reservoirs
