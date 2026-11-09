@@ -75,23 +75,52 @@ def _slit_geometry(run, pos, width):
     return quads, outlines, np.array(half)
 
 
+# Oblique camera for slit slabs. "near-top" is the default: mostly top-down so concentration
+# colour on the channel faces is readable, with a mild shear so the H still reads as 3D.
+# "iso" is the older steeper view; "top" is almost orthographic.
+SLIT_VIEWS = {
+    # mild vertical exaggeration (squash>1) so H-junction channels fill the panel and
+    # coloured tops stay wide; shear kept small so it still reads as near-overhead
+    "near-top": dict(shear=0.12, squash=1.25, depth=0.12),
+    "iso":      dict(shear=0.60, squash=0.60, depth=0.45),
+    "top":      dict(shear=0.05, squash=1.00, depth=0.10),
+}
+
+
+def _slit_view_params(span, view="near-top", shear=None, squash=None, depth=None):
+    """Resolve shear/squash/depth from a named preset plus optional overrides."""
+    if view not in SLIT_VIEWS:
+        raise ValueError(f"unknown slit view {view!r}; choose from {sorted(SLIT_VIEWS)}")
+    p = dict(SLIT_VIEWS[view])
+    if view == "iso":
+        # very flat layouts (e.g. a single row) stay readable with less foreshortening
+        ratio = float(span[0] / max(span[1], 1e-9))
+        if ratio >= 8:
+            p["squash"] = 1.0
+    if shear is not None:
+        p["shear"] = float(shear)
+    if squash is not None:
+        p["squash"] = float(squash)
+    if depth is not None:
+        p["depth"] = float(depth)
+    return p["shear"], p["squash"], p["depth"]
+
+
 def _oblique(xy, shear=0.55, squash=0.5):
     """Tilted-plane view: x' = x + shear*y, y' = squash*y (keeps straight lines straight)."""
     xy = np.asarray(xy, float)
     return np.stack([xy[..., 0] + shear * xy[..., 1], squash * xy[..., 1]], axis=-1)
 
 
-def _draw_slits(ax, run, pos, k, field, norm, cmap, width, depth=0.45, oblique=True):
-    """Draw slit channels as flat slabs seen from above at an angle (like the README schematic):
-    coloured top faces, grey side walls of thickness `depth*width`. Returns the PolyCollection
-    whose array holds the per-cell field (update with set_array)."""
+def _draw_slits(ax, run, pos, k, field, norm, cmap, width, depth=None, oblique=True,
+                view="near-top", shear=None, squash=None):
+    """Draw slit channels as flat slabs: coloured top faces, grey side walls of thickness
+    `depth*width`. `view` selects a camera preset (near-top / iso / top); shear/squash/depth
+    override the preset. Returns the PolyCollection whose array holds the per-cell field."""
     from matplotlib.collections import PolyCollection
     quads, outlines, half = _slit_geometry(run, pos, width)
     span = np.ptp(np.asarray(pos, float), axis=0)
-    # fixed oblique view, like the README schematic; layouts with almost no vertical extent
-    # (e.g. a single row of pores) get a little more squash so the slabs remain readable
-    ratio = float(span[0] / max(span[1], 1e-9))
-    shear, squash = 0.6, (0.6 if ratio < 8 else 1.0)
+    shear, squash, depth = _slit_view_params(span, view=view, shear=shear, squash=squash, depth=depth)
     T = (lambda a: _oblique(a, shear, squash)) if oblique else (lambda a: np.asarray(a, float))
     quads = [T(q) for q in quads]
     outlines = [T(o) for o in outlines]
@@ -117,8 +146,11 @@ def _draw_slits(ax, run, pos, k, field, norm, cmap, width, depth=0.45, oblique=T
         ax.add_collection(PolyCollection([sq], facecolors="0.15" if fixed else "0.85",
                                          edgecolors="0.1", linewidths=0.8, zorder=4))
         if fixed:
-            ax.annotate(f"V={res[nd]['potential']:g}", c, textcoords="offset points", xytext=(0, 10),
-                        ha="center", fontsize=8, zorder=5)
+            # put labels above upper reservoirs and below lower ones so they clear the slabs
+            above = c[1] >= float(np.median(pos[:, 1]))
+            ax.annotate(f"V={res[nd]['potential']:g}", c, textcoords="offset points",
+                        xytext=(0, 12 if above else -18), ha="center",
+                        va="bottom" if above else "top", fontsize=8, zorder=5)
     return pc
 
 
@@ -206,7 +238,8 @@ def circulating_loops(run, k, rel_tol=1e-3):
 
 
 def network_map(run, field="C_bar", times=None, out="docs/figures", prefix="network", layout=None,
-                width=6, title=None, arrows=None, loops=None, shape="line", slit_width=None):
+                width=6, title=None, arrows=None, loops=None, shape="line", slit_width=None,
+                view="near-top", view_shear=None, view_squash=None, view_depth=None):
     """Schematic of the whole network, every pore drawn node-to-node and coloured cell by cell.
     Pore lengths are not to scale. Squares: fixed-potential reservoirs; circles: internal nodes."""
     plt, _ = _mpl()
@@ -226,10 +259,11 @@ def network_map(run, field="C_bar", times=None, out="docs/figures", prefix="netw
     res = run.net.get("reservoirs") or []
     arrows = (field == "U") if arrows is None else arrows
     loops = (field == "U") if loops is None else loops
-    slit_w = slit_width or 0.06 * float(np.ptp(pos, axis=0).max() or 1.0)
+    slit_w = slit_width or (0.12 if shape == "slit" else 0.06) * float(np.ptp(pos, axis=0).max() or 1.0)
     for ax, k in zip(axs.flat, idx):
         if shape == "slit":
-            lc = _draw_slits(ax, run, pos, k, field, norm, cmap, slit_w)
+            lc = _draw_slits(ax, run, pos, k, field, norm, cmap, slit_w,
+                            view=view, shear=view_shear, squash=view_squash, depth=view_depth)
             ax.autoscale(); ax.margins(0.08); ax.set_aspect("equal"); ax.axis("off")
             ax.set_title(f"t = {run.times[k]:.3g}", fontsize=10)
             continue
@@ -512,7 +546,8 @@ def node_balance(run, cf):
 
 # ---------------- network + paths animation ----------------
 def animate(run, paths, field="C_bar", out="docs/figures", prefix="anim", layout=None, gif=True, mp4=True,
-            fps=12, title=None, width=6, shape="line"):
+            fps=12, title=None, width=6, shape="line", slit_width=None,
+            view="near-top", view_shear=None, view_squash=None, view_depth=None):
     """Animation: network schematic coloured by `field` (left/top) plus the field along each chain
     of pores in `paths` (list of pore lists). Uses the snapshot times as frames (uneven spacing is
     kept, so early fast dynamics get more frames when the run wrote them)."""
@@ -523,12 +558,16 @@ def animate(run, paths, field="C_bar", out="docs/figures", prefix="anim", layout
     allv = np.concatenate([run.field(k, p, field) for k in range(nT) for p in range(run.n_pores)])
     norm, cmap = _norm(run, field, allv)
     span = np.ptp(pos, axis=0)
-    fig = plt.figure(figsize=(11, 4.6))
-    gs = fig.add_gridspec(len(paths), 2, width_ratios=[1.05, 1.25], wspace=0.25, hspace=0.55)
+    fig = plt.figure(figsize=(11, 5.0))
+    gs = fig.add_gridspec(len(paths), 2, width_ratios=[1.15, 1.15], wspace=0.28, hspace=0.55)
     axn = fig.add_subplot(gs[:, 0])
     res = run.net.get("reservoirs") or []
     if shape == "slit":
-        lc = _draw_slits(axn, run, pos, 0, field, norm, cmap, 0.06 * float(np.ptp(pos, axis=0).max() or 1.0))
+        # slightly wider channels than the old 0.06 factor so the coloured tops stay readable
+        # under a near-top camera
+        sw = slit_width if slit_width is not None else 0.12 * float(np.ptp(pos, axis=0).max() or 1.0)
+        lc = _draw_slits(axn, run, pos, 0, field, norm, cmap, sw,
+                        view=view, shear=view_shear, squash=view_squash, depth=view_depth)
     else:
         segs = []
         for p, pore in enumerate(run.net["pores"]):

@@ -29,6 +29,21 @@ def _floats(s):
     return [float(v) for v in s.replace(" ", "").split(",") if v != ""]
 
 
+def _add_slit_view_args(s):
+    """Camera for --shape slit: named preset plus optional shear/squash/depth overrides."""
+    s.add_argument("--view", choices=["near-top", "iso", "top"], default="near-top",
+                   help="slit camera: near-top (default, mostly overhead), iso (steeper), top")
+    s.add_argument("--view-shear", type=float, default=None,
+                   help="override oblique shear (x' = x + shear*y)")
+    s.add_argument("--view-squash", type=float, default=None,
+                   help="override y foreshortening (y' = squash*y); 1 = no squash")
+    s.add_argument("--view-depth", type=float, default=None,
+                   help="override side-wall depth as a fraction of channel width")
+    s.add_argument("--slit-width", type=float, default=None,
+                   help="drawn channel width in layout units (default scales with network span)")
+
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="ekpn-viz", description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -53,6 +68,7 @@ def main(argv=None):
     s.add_argument("--times", type=_floats, help="comma-separated times (default: 4 spread over the run)")
     s.add_argument("--shape", choices=["line", "slit"], default="line",
                    help="pores as coloured lines or as flat slit channels (oblique slab look)")
+    _add_slit_view_args(s)
     s.add_argument("--title")
     s.add_argument("--layout", help="CSV node,x,y or 'spring' (default: x/y in network.toml, "
                                     "Network.in geometry rows, else spring layout)")
@@ -70,6 +86,7 @@ def main(argv=None):
     common(s, "anim")
     s.add_argument("--paths", required=True, help='pore chains separated by ";", e.g. "0,1;3,4"')
     s.add_argument("--shape", choices=["line", "slit"], default="line")
+    _add_slit_view_args(s)
     s.add_argument("--layout")
     s.add_argument("--fps", type=int, default=12)
     s.add_argument("--title")
@@ -111,7 +128,9 @@ def main(argv=None):
         return
     run = Run(a.run_dir, a.network, a.dt, a.write_every, a.tmax, a.num_pores, a.num_reservoirs, a.log)
     if a.cmd == "network":
-        print(plots.network_map(run, a.field, a.times, a.out, a.prefix, a.layout, shape=a.shape, title=a.title))
+        print(plots.network_map(run, a.field, a.times, a.out, a.prefix, a.layout, shape=a.shape, title=a.title,
+                                slit_width=a.slit_width, view=a.view, view_shear=a.view_shear,
+                                view_squash=a.view_squash, view_depth=a.view_depth))
     elif a.cmd == "pores":
         print(plots.pores_grid(run, a.field, a.out, a.prefix, a.pores))
     elif a.cmd == "flow":
@@ -132,7 +151,9 @@ def main(argv=None):
     elif a.cmd == "animate":
         paths = [_ints(c) for c in a.paths.split(";")]
         for pth in plots.animate(run, paths, a.field, a.out, a.prefix, a.layout, gif=not a.no_gif,
-                                 mp4=not a.no_mp4, fps=a.fps, title=a.title, shape=a.shape):
+                                 mp4=not a.no_mp4, fps=a.fps, title=a.title, shape=a.shape,
+                                 slit_width=a.slit_width, view=a.view, view_shear=a.view_shear,
+                                 view_squash=a.view_squash, view_depth=a.view_depth):
             print(pth)
     elif a.cmd == "current":
         path, cf = plots.currents(run, a.out, a.prefix)
