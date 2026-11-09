@@ -56,7 +56,7 @@ same lattice with the flow turned off confirms that the difference comes from th
 averaged model built from decoupled pores misses this behavior, and capturing it is the reason to resolve the
 full network.
 
-These large-scale results appear in my third paper and my PhD thesis. The network-generation code is not
+These large-scale results appear in my PhD thesis and in [Alizadeh, Bazant & Mani, *J. Colloid Interface Sci.* (2019)](https://doi.org/10.1016/j.jcis.2019.06.023), listed under [Citation](#citation). The network-generation code is not
 included here for now. If you're interested in running these simulations, please email me; my contact
 information is on my [GitHub profile](https://github.com/shimaalizadeh).
 
@@ -181,3 +181,6 @@ If you use this code, please cite:
   Derivation", *Langmuir* 33(25), 6205-6219 (2017). doi:10.1021/acs.langmuir.6b03816
 - S. Alizadeh, A. Mani, "Multiscale Model for Electrokinetic Transport in Networks of Pores, Part II: Computational
   Algorithms and Applications", *Langmuir* 33(25), 6220-6231 (2017). doi:10.1021/acs.langmuir.7b00591
+- S. Alizadeh, M. Z. Bazant, A. Mani, "Impact of Network Heterogeneity on Electrokinetic Transport in Porous Media",
+  *Journal of Colloid and Interface Science* 553, 451-464 (2019). doi:10.1016/j.jcis.2019.06.023
+  ([arXiv:1901.02525](https://arxiv.org/abs/1901.02525))
