@@ -22,12 +22,18 @@ def front_position(x, c, frac=0.5):
     return x[below[0]] if below.size else np.nan
 
 
-def shock_thickness(x, C, frac=0.5):
+def shock_thickness(x, C, frac=0.5, formed=0.1):
     """Shock thickness per profile, as the distance between where the tangent at
-    C = frac * C_inlet meets C = 0 and C = C_inlet: delta = C_inlet / |dC/dx| there."""
+    C = frac * C_inlet meets C = 0 and C = C_inlet: delta = C_inlet / |dC/dx| there.
+    Only defined once the shock has formed, i.e. the depleted side has dropped below
+    formed * C_inlet; before that (the first steps after the uniform initial condition, when
+    depletion is still building up against the dead end) the profile is not yet a shock and
+    NaN is returned."""
     out = np.full(len(C), np.nan)
     for k, c in enumerate(C):
         ref = c[0]
+        if c.min() > formed * ref:
+            continue
         i = np.nonzero(c < frac * ref)[0]
         if i.size == 0 or i[0] == 0:
             continue
@@ -134,7 +140,7 @@ def single_pore(run_dir, network, dt, write_every, out="docs/figures", prefix="s
         vl = ax.axvline(xs[0], color="0.4", ls="--", lw=1)
         ax.set_xlim(0, L); ax.set_ylim(0, 1.08 * C.max())
         ax.set_xlabel("x along pore (inlet → dead end)"); ax.set_ylabel(r"$\bar C$")
-        title = ax.set_title("")
+        title = ax.set_title(f"Deionization shock, t = {times[0]:.4f}")   # sized before tight_layout
 
         def upd(k):
             line.set_ydata(C[k])

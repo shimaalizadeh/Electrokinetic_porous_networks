@@ -1,17 +1,22 @@
 # Electrokinetic Porous Networks
 
-A multiscale, reduced-order model of nonlinear electrokinetic transport (ion transport driven by electric fields
-and pressure) in networks of microscale and nanoscale pores.
+A multiscale, reduced-order model of nonlinear electrokinetic transport in networks of microscale and nanoscale
+pores. Fluid flow and ion transport are coupled and driven by gradients in pressure, electric potential and salt
+concentration, through three mechanisms that act together and affect one another: pressure-driven flow,
+electroosmosis and diffusio-osmosis.
 
-**Single pore**: a charged pore between two reservoirs. Under an applied voltage a deionization shock
-moves through the pore toward the inlet end.
+**Single pore**: a charged pore with an inlet reservoir on one end and a dead end on the other. The dead end acts
+as an ideal cation-selective membrane: cations pass through it, while anions and fluid cannot, so the
+electroosmotic flow is balanced by an opposing pressure gradient and the net flow is zero. Under an applied
+voltage a deionization shock forms at the dead end and moves through the pore toward the inlet.
 
 <p>
   <img src="docs/figures/single_pore_schematic.png" width="49%" alt="single pore schematic">
   <img src="docs/figures/single_pore_shock.gif" width="49%" alt="single pore shock animation">
 </p>
 
-Left: the pore between two reservoirs. Right: the shock moving into the pore.
+Left: the pore, with the inlet reservoir on the left and the cation-selective membrane at the dead end on the
+right. Right: the shock moving through the pore.
 
 <p>
   <img src="docs/figures/single_pore_spacetime.png" width="49%" alt="single pore space-time">
@@ -20,8 +25,14 @@ Left: the pore between two reservoirs. Right: the shock moving into the pore.
 
 Left: C̄(x, t), black = depleted, dashed line = shock front. Right: shock thickness, which grows like t^1/2 while the front moves freely (shown up to its peak).
 
-**H-junction** (3200/30/3200 cells, V = 400 / 160 on the top channel, bottom grounded). A depletion shock
-grows in the top channel next to the nanochannel and an enriched zone forms in the bottom channel.
+**H-junction** (3200 cells per channel and 30 in the element; V = 400 and 160 at the two ends of the top
+channel, about 10 V and 4 V in the thesis setup; V = 0 at both ends of the bottom channel). A depletion shock
+grows in the top channel next to the cation-selective element and an enriched zone forms in the bottom channel.
+The geometry is inspired by lab-on-a-chip preconcentration devices ([Son et al., *BioChip J.* (2016)](https://doi.org/10.1007/s13206-016-0401-7)),
+in particular the nanofluidic filter of [Wang, Stevens & Han, *Anal. Chem.* (2005)](https://doi.org/10.1021/ac050321z),
+where a similar stationary depletion interface was observed in experiments.
+Top: the two channels and the cation-selective element, colored by concentration. Bottom: concentration along
+the top and bottom channels.
 
 ![H-junction slit animation](docs/figures/hjunction_slit_C_bar.gif)
 
@@ -37,12 +48,12 @@ sampled from a log-normal distribution.
   <img src="docs/figures/lattice_iv_vs_homogenized.png" width="49%" alt="I-V of lattice vs homogenized model">
 </p>
 
-Left: evolution of the concentration field in a hierarchical lattice between a 50 mM reservoir (left) and a
-cation-selective membrane (right) under an applied field, with periodic boundaries at the top and bottom. Wide
+Left: evolution of the concentration field in a hierarchical lattice between a reservoir at the reference concentration (left;
+C = 1, which is 50 mM KCl in the thesis) and a cation-selective membrane (right) under an applied field, with periodic boundaries at the top and bottom. Wide
 main channels branch into progressively finer micro- and nanoscale pores, and each pore is solved with the same
 reduced-order 1D model and implicit conservative scheme used in the examples above. Right: current-voltage
-characteristics of the lattice medium (solid red), the equivalent homogenized model (solid blue), and the
-diffusion-limiting current (dashed black).
+characteristics of the lattice medium (red line with markers at the simulated voltages), the equivalent
+homogenized model (solid blue), and the diffusion-limited current (dashed black).
 
 **Why the network matters.** The homogenized model is a bundle of identical, decoupled parallel pores with the
 same effective pore size and surface conduction as the lattice. Because its pores cannot exchange fluid, its
@@ -68,21 +79,35 @@ polarization and deionization shocks, which need fine resolution along the pores
 too expensive to resolve fully in 2D/3D. The model and its validation are described in the publications
 listed under [Citation](#citation).
 
+**Units.** The solver works in the dimensionless form used in the thesis (Alizadeh 2017, Sec. 2.2 and Table 2.1),
+and all inputs, boundary conditions and outputs in this README are in these units unless a physical value is
+given in parentheses. Lengths along a pore are scaled by a reference pore length L (a pore `length` of 1 means
+L), concentrations by the reference reservoir concentration C<sub>ref</sub>, potentials by the thermal voltage
+V<sub>T</sub> = k<sub>B</sub>T/(ze) (about 26 mV at room temperature), pressure by C<sub>ref</sub>k<sub>B</sub>T
+and time by the diffusion time L<sup>2</sup>/D. The cross-section physics of each pore is set by two numbers: the dimensionless Debye
+length `lambda_D` = λ<sub>ref</sub>/h<sub>p</sub>, where λ<sub>ref</sub> = (εk<sub>B</sub>T/(2C<sub>ref</sub>z<sup>2</sup>e<sup>2</sup>))<sup>1/2</sup>
+and h<sub>p</sub> = area/perimeter (h/2 for a slit of gap h, R/2 for a circular pore of radius R), and the
+dimensionless surface charge `sigma_star` = h<sub>p</sub>zeσ/(εk<sub>B</sub>T).
+
 ## Features
 - Any network topology of slit and circular pores and reservoirs; surface charge, Debye length, area and
   initial concentration can be set per pore or per cell.
 - Fixed potential/pressure reservoirs, closed reservoirs of finite volume, and dead-end pores.
 - Outputs: concentration, pressure and electrochemical potential per cell, plus total current and flow over time.
-- Inputs: a small TOML run file and a labelled `network.toml` with defaults (the legacy `Network.in` is still read).
+- Inputs: a small TOML run file and a labeled `network.toml` with defaults (the legacy `Network.in` is still read).
 - `ekpn-viz`: a Python package for plots, MP4/GIF animations, slit schematics, VTK/ParaView export and 3D rendering.
 
 ## Build
-Requires a C++20 compiler, CMake >= 3.20 and LAPACK/BLAS (e.g. `liblapack-dev`). Ninja is optional.
+Requires a C++20 compiler, CMake >= 3.20, GNU make and LAPACK/BLAS (e.g. `liblapack-dev`). Ninja is optional
+and used automatically when installed.
 
-    cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-    cmake --build build             # -> build/ek_solver
+    make                  # build -> build/ek_solver (Release)
+    make clean            # remove build/
+    make rebuild          # clean, then build
+    make TYPE=Debug       # Debug build
 
-The legacy `Makefile` still works too.
+The `Makefile` is a thin wrapper around CMake; see it for the underlying `cmake` commands. `CMakePresets.json`
+provides `release` and `debug` presets for IDEs.
 
 ## Quickstart
 
@@ -156,10 +181,12 @@ Example: run the H-junction, then make its video. From the repo root:
     cd run && ../build/ek_solver ../examples/hjunction_reference/run.toml > log.txt && cd ..
 
     ekpn-viz animate run --network run/input_files/network.toml --dt 1e-5 --write-every 50 \
-        --paths "0,1;3,4" --shape slit
+        --paths "0,1;3,4" --shape slit --style clean --title "H-junction" \
+        --path-names "Top channel (V = 400 to 160);Bottom channel (grounded ends)" \
+        --hatch-pores 2 --pore-label "2:Cation-selective element" --prefix hjunction_slit
 
 The run takes a few minutes and writes snapshots into `run/`. The last command saves an MP4 and a GIF in
-`docs/figures/`: the H-junction coloured by concentration, with concentration along the top channel (pores 0
+`docs/figures/` (`hjunction_slit_C_bar.*`): the H-junction colored by concentration, with concentration along the top channel (pores 0
 and 1) and the bottom channel (pores 3 and 4). `--dt` and `--write-every` must match the run file, so snapshot
 numbers can be turned into times.
 
@@ -170,8 +197,10 @@ Other plots (`network`, `current`, 3D views) are listed in `ekpn-viz --help`.
 |---|---|---|
 | Single pore | `input_files/network.toml`, `examples/single_pore/` | deionization shock in a charged slit; I_tot = 23.2686 baseline |
 | T-junction | `examples/tjunction/` | three pores meeting at an internal node |
-| H-junction | `examples/hjunction_reference/` | two microchannels joined by a nanochannel: depletion shock and enrichment |
-| Others | `examples/toy6_loop`, `circular_pore`, `conical_diode`, `hjunction` | flow loop, circular pore, conical pore |
+| H-junction | `examples/hjunction_reference/` | two microchannels joined by a cation-selective element: depletion shock and enrichment |
+| Flow loop | `examples/toy6_loop/` | six pores of two sizes forming a loop, where mismatched electroosmotic flow drives internal recirculation |
+| Circular pore | `examples/circular_pore/` | the cylindrical counterpart of the single-pore slit case: one charged circular pore |
+| Conical pore | `examples/conical_diode/` | a circular pore built from segments of increasing area, so the current depends on the voltage's sign (rectification) |
 
 ## Citation
 If you use this code, please cite:

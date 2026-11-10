@@ -1,4 +1,5 @@
-"""Schematic of a single charged pore between two reservoirs (matplotlib, no data needed).
+"""Schematic of a single charged dead-end pore: inlet reservoir on the left, ideal cation-selective
+membrane at the dead end on the right (as in Alizadeh 2017, Fig. 4.1a). Matplotlib, no data needed.
 
     python -m ekpn_viz.schematic docs/figures/single_pore_schematic.png
 """
@@ -27,16 +28,18 @@ def single_pore_schematic(path="docs/figures/single_pore_schematic.png", dpi=200
         fx = x0 if face == "left" else x1
         ax.add_patch(Ellipse((fx, 0), 0.7, 2 * r, color="white", alpha=0.25, zorder=2))
 
-    # reservoirs
-    cylinder(0.3, 2.2, 1.5, dark, "left")
-    cylinder(7.8, 9.7, 1.5, light, "right")
-    # pore: horizontal gradient from dark to light
+    # inlet reservoir
+    cylinder(1.0, 2.2, 1.5, dark, "left")   # narrower inlet reservoir
+    # pore: horizontal gradient from dark (bulk) to light (depleted near the membrane)
     h, x0, x1 = 0.55, 2.2, 7.8
     grad = np.linspace(0, 1, 256)[None, :]
     ax.imshow(grad, extent=(x0, x1, -h, h), cmap=cm, aspect="auto", zorder=3)
     for y in (h, -h):
         ax.plot([x0, x1], [y, y], "k--", lw=1, zorder=4)
-    ax.add_patch(Ellipse((x1, 0), 0.25, 2 * h, fill=False, ec="k", lw=1.2, zorder=4))
+    # dead end: ideal cation-selective membrane (cations pass; no anion flux, no net flow)
+    mw, mh = 0.75, 1.2
+    ax.add_patch(Rectangle((x1, -mh), mw, 2 * mh, facecolor="0.82", edgecolor="0.2", hatch="////",
+                           lw=1.0, zorder=5))
     # EDL edges: thicker near the dilute side
     xx = np.linspace(x0, x1, 200)
     d = 0.12 + 0.28 * (xx - x0) / (x1 - x0)
@@ -52,10 +55,11 @@ def single_pore_schematic(path="docs/figures/single_pore_schematic.png", dpi=200
     ax.annotate("", xy=(4.95, -h - 0.35), xytext=(5.4, -h - 0.35), arrowprops=dict(arrowstyle="<->", lw=0.9))
     ax.text(5.17, -h - 0.75, "dx", ha="center", fontsize=11)
     ax.text(5.17, h + 0.3, r"$\sigma$", ha="center", fontsize=14)
-    # labels
-    ax.text(1.3, 0.0, r"$C_{0L}$", color="white", ha="center", va="center", fontsize=15, zorder=3)
-    ax.text(8.85, 0.25, r"$C_{0R}$", color="k", ha="center", va="center", fontsize=15, zorder=3)
-    ax.text(8.85, -0.35, r"($C_{0L} > C_{0R}$)", ha="center", va="center", fontsize=9, zorder=3)
+    # labels (kept clear of the geometry)
+    ax.text(1.8, 0.0, r"$C_{0}$", color="white", ha="center", va="center", fontsize=15, zorder=3)
+    tx = x1 + mw + 0.3
+    ax.text(tx, 0.32, "Cation-selective\nmembrane", ha="left", va="center", fontsize=12, linespacing=1.15)
+    ax.text(tx, -0.55, r"$\bar u = 0,\ F^- = 0$", ha="left", va="center", fontsize=12)
     fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return path

@@ -92,6 +92,13 @@ def main(argv=None):
     s.add_argument("--title")
     s.add_argument("--no-gif", action="store_true")
     s.add_argument("--no-mp4", action="store_true")
+    s.add_argument("--style", choices=["classic", "clean"], default="classic",
+                   help="clean (slit only): dissertation-style slabs, schematic on top, profiles below, "
+                        "labels kept clear of the geometry")
+    s.add_argument("--path-names", help='titles for the path panels, separated by ";"')
+    s.add_argument("--hatch-pores", type=_ints, default=[], help="pores drawn with a porous stipple (clean style)")
+    s.add_argument("--pore-label", action="append", default=[], metavar="PORE:TEXT",
+                   help='callout for a pore, e.g. "2:Cation-selective element" (clean style; repeatable)')
     s = sub.add_parser("export-vtk", help="VTK PolyData (.vtp) per snapshot + .pvd time series (ParaView/Blender)")
     common(s, "network", field=False)
     s.add_argument("--layout"); s.add_argument("--every", type=int, default=1, help="export every N-th snapshot")
@@ -153,7 +160,10 @@ def main(argv=None):
         for pth in plots.animate(run, paths, a.field, a.out, a.prefix, a.layout, gif=not a.no_gif,
                                  mp4=not a.no_mp4, fps=a.fps, title=a.title, shape=a.shape,
                                  slit_width=a.slit_width, view=a.view, view_shear=a.view_shear,
-                                 view_squash=a.view_squash, view_depth=a.view_depth):
+                                 view_squash=a.view_squash, view_depth=a.view_depth, style=a.style,
+                                 path_names=a.path_names.split(";") if a.path_names else None,
+                                 hatch_pores=a.hatch_pores,
+                                 pore_labels={int(v.split(":", 1)[0]): v.split(":", 1)[1] for v in a.pore_label}):
             print(pth)
     elif a.cmd == "current":
         path, cf = plots.currents(run, a.out, a.prefix)
